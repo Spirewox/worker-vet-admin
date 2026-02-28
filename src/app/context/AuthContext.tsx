@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext} from 'react';
 import type { ReactNode } from 'react';
 import { useWhoAmI } from '../hooks/useQueries';
 import { useNavigate } from 'react-router-dom';
@@ -38,46 +38,41 @@ export interface IUser {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [localUser, setLocalUser] = useState<IUser | null>(null);
-  const [prevState, setPrevState] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-
   const navigate = useNavigate();
 
   const {
-    data : user,
+    data: user,
     isLoading,
     isRefetching,
     isError,
     refetch
   } = useWhoAmI();
-  
 
-  useEffect(() => {
-    if (user){
-      setLoading(false)
-      setLocalUser(user); // sync when fetched
-    }
-    if(isError){
-      setLoading(false)
-    }
-  }, [user,isError]);
-
-
-  const login = async (user :  IUser) => {
-    setLocalUser(user)
-    await refetch()
-    navigate(prevState ?? user.role == "admin" ? "/admin" : "/dashboard", { replace: true });
+  const login = async () => {
+    await refetch();
+    navigate("/admin");
   };
 
   const logout = async () => {
-    await axiosPost('auth/logout',{}, true)
-    navigate("/login");
+    await axiosPost("auth/logout", {}, true);
+    navigate("/admin/login");
   };
 
+  const loading = isLoading || isRefetching;
+
   return (
-    <AuthContext.Provider value={{ user, login,isRefetching, logout,loading: loading,
-        error : isError, isAuthenticated: !!user,refetch }}>
+    <AuthContext.Provider
+      value={{
+        user: user ?? null,
+        login,
+        logout,
+        loading,
+        error: isError,
+        isRefetching,
+        isAuthenticated: !!user,
+        refetch
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

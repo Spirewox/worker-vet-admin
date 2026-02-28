@@ -1,4 +1,4 @@
-import { Skill } from "./settings.interface";
+import type { Skill } from "./settings.interface";
 
 export interface Question {
   _id ?: string;
