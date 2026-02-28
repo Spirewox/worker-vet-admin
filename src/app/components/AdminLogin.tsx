@@ -67,7 +67,7 @@ export const AdminLogin: React.FC = () => {
                 {error}
               </div>
             )}
-            <Button type="submit" className="cursor-pointer w-full bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" disabled={loading} className="cursor-pointer w-full bg-blue-600 hover:bg-blue-700">
               <Lock className="w-4 h-4 mr-2" /> Access Dashboard
             </Button>
           </form>

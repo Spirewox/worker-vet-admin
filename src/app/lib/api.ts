@@ -1,4 +1,4 @@
-import axios, { AxiosError, isAxiosError } from "axios";
+import axios, { isAxiosError } from "axios";
 
 const base_url = import.meta.env.VITE_BASE_URL;
 
@@ -19,7 +19,7 @@ export const axiosPost = async (
   endpoint: string,
   data?: object,
   withAuth?: boolean,
-  extraHeader?: object
+  // extraHeader?: object
 ) => {
   try {
     const res = await axios.post(`${base_url}${endpoint}`, data, {withCredentials : withAuth});
@@ -30,7 +30,7 @@ export const axiosPost = async (
         Array.isArray(error.response?.data?.message)
           ? error.response.data.message[0]
               .split('_')
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .map((word : string) => word.charAt(0).toUpperCase() + word.slice(1))
               .join(' ')
           : error.response?.data?.message || 'An error occurred'
       );
@@ -43,7 +43,7 @@ export const axiosPatch = async (
   endpoint: string,
   data?: object,
   withAuth?: boolean,
-  extraHeader?: object
+  // extraHeader?: object
 ) => {
   try {
     const res = await axios.patch(`${base_url}${endpoint}`, data,{withCredentials : withAuth});
@@ -51,7 +51,7 @@ export const axiosPatch = async (
   } catch (error) {
     if (isAxiosError(error)) {
       throw new Error(error.response?.data?.message[0].split('_')
-                                          .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // capitalize
+                                          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)) // capitalize
                                           .join(' ') || error.message);
     }
     throw error;
@@ -62,7 +62,7 @@ export const axiosPut = async (
   endpoint: string,
   data?: object,
   withAuth?: boolean,
-  extraHeader?: object
+  // extraHeader?: object
 ) => {
   try {
     const res = await axios.put(`${base_url}${endpoint}`, data, {withCredentials : withAuth});
@@ -71,7 +71,7 @@ export const axiosPut = async (
     if (isAxiosError(error)) {
       console.log(error.response?.data?.message)
       throw new Error(error.response?.data?.message[0].split('_')
-                                          .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // capitalize
+                                          .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)) // capitalize
                                           .join(' ')|| error.message);
     }
     throw error;
