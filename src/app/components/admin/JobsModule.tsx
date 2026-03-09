@@ -2,6 +2,7 @@ import { Edit2, Plus, Trash2 } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { Toggle } from "../ui/toggle";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Textarea } from "../ui/textarea";
@@ -117,6 +118,18 @@ const totalPages = jobsData?.meta?.totalPages || 1;
         const normalizedParts = parts?.map(convert)?.filter(Boolean);
 
         return normalizedParts?.join(" - ");
+    };
+
+    const handleToggleActive = async (job: IJob) => {
+        try {
+            await axiosPatch(`jobs/${job._id}`, { is_active: !job.is_active }, true);
+            toast.success(`Job ${job.job_title} is now ${!job.is_active ? 'ACTIVE' : 'INACTIVE'}`);
+            refetchJobs();
+        } catch (error) {
+            console.log(error);
+            if (error instanceof Error) toast.error(error.message);
+            toast.error('Failed to update job status');
+        }
     };
 
   return (
@@ -237,7 +250,15 @@ const totalPages = jobsData?.meta?.totalPages || 1;
                         <p className="text-sm text-slate-500 mb-3">{(job?.department as Department)?.department_name} • {job.location}</p>
                         <p className="text-sm text-slate-600 line-clamp-2 max-w-2xl">{job.job_description}</p>
                     </div>
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Toggle
+                            pressed={!!job.is_active}
+                            onPressedChange={() => handleToggleActive(job as IJob)}
+                            aria-label={`Toggle active for ${job.job_title}`}
+                            className="h-6 w-12"
+                        >
+                            {/* visual label kept small */}
+                        </Toggle>
                         <Button variant="outline" size="sm" onClick={() => { setCurrentJob({...job, department : (job.department as Department)._id}); setIsEditing(true); }}>
                             <Edit2 className="w-4 h-4" />
                         </Button>
