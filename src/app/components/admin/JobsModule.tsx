@@ -2,7 +2,7 @@ import { Copy, Edit2, Plus, Trash2 } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Toggle } from "../ui/toggle";
+import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Textarea } from "../ui/textarea";
@@ -269,14 +269,11 @@ const JobsModule = () => {
                                         <p className="text-sm text-slate-600 line-clamp-2 max-w-2xl">{job.job_description}</p>
                                     </div>
                                     <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <Toggle
-                                            pressed={!!job.is_active}
-                                            onPressedChange={() => handleToggleActive(job as IJob)}
+                                        <Switch
+                                            checked={!!job.is_active}
+                                            onCheckedChange={() => handleToggleActive(job as IJob)}
                                             aria-label={`Toggle active for ${job.job_title}`}
-                                            className="h-6 w-12"
-                                        >
-                                            {/* visual label kept small */}
-                                        </Toggle>
+                                        />
                                         <Button
                                             variant="outline"
                                             size="sm"
