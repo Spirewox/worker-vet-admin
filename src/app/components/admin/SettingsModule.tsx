@@ -76,7 +76,7 @@ const SettingsModule = () => {
         try {
             setIsSubmittingDept(true)
            if (confirm(`Delete department "${dept.department_name}"? This may affect existing job postings.`)) {
-                await axiosDelete(`skills/${dept._id}`,true)
+                await axiosDelete(`departments/${dept._id}`,true)
                 toast.success("Department deleted successfully")
                 refetchDepartments()
             } 
