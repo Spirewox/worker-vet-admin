@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { axiosGet } from "../lib/api";
 import type { IJob } from "../interface/job.interface";
+import type { Department } from "../interface/settings.interface";
 
 export interface JobRes{ 
   data : IJob[],
@@ -11,6 +12,38 @@ export interface JobRes{
     total : number
     totalPages : number
   }
+}
+
+export interface JobApplicant {
+  _id: string;
+  is_certified: boolean;
+  createdAt: Date;
+  applicant: {
+    _id: string;
+    full_name: string;
+    email: string;
+    phone?: string;
+    cv?: {
+      filename: string;
+      url: string;
+    };
+    target_department: null | string | Department;
+  };
+}
+
+export interface JobApplicantsRes {
+  data: JobApplicant[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    search: string | null;
+    job: {
+      _id: string;
+      job_title: string;
+    };
+  };
 }
 
 const fetchJobs = async (params ?: {page ?: number, limit ?: number, search ?: string, department ?: string, job ?: string}) => {
@@ -27,6 +60,17 @@ const fetchJobs = async (params ?: {page ?: number, limit ?: number, search ?: s
   return response as JobRes
 };
 
+const fetchJobApplicants = async (jobId: string, params?: { page?: number; limit?: number; search?: string }) => {
+  const queryParams = new URLSearchParams();
+  if (params?.page) queryParams.append('page', String(params.page));
+  if (params?.limit) queryParams.append('limit', String(params.limit));
+  if (params?.search) queryParams.append('search', String(params.search));
+
+  const endpoint = `jobs/${jobId}/applicants?${queryParams.toString()}`;
+  const response = await axiosGet(endpoint, true);
+  return response as JobApplicantsRes;
+};
+
 // Custom hook
 export const useJobs = (enabled : boolean, params ?: {page ?: number, limit ?: number, search ?: string, department ?: string, job ?: string} ) => {
   return useQuery({
@@ -34,5 +78,18 @@ export const useJobs = (enabled : boolean, params ?: {page ?: number, limit ?: n
     enabled ,
     queryFn: ()=> fetchJobs(params),
     retry : false,
+  });
+};
+
+export const useJobApplicants = (
+  enabled: boolean,
+  jobId?: string,
+  params?: { page?: number; limit?: number; search?: string },
+) => {
+  return useQuery({
+    queryKey: ["job-applicants", jobId, params],
+    enabled: enabled && !!jobId,
+    queryFn: () => fetchJobApplicants(jobId!, params),
+    retry: false,
   });
 };

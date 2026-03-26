@@ -10,6 +10,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Link } from "react-router-dom";
 import { Skeleton } from "../ui/skeleton";
 import type { Department } from "../../interface/settings.interface";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../ui/pagination";
 
 const UserManagementModule: React.FC = () => {
   const {user} = useAuth()
@@ -25,6 +26,15 @@ const UserManagementModule: React.FC = () => {
     page,
     limit
   })
+  const totalPages = usersData?.meta?.totalPages || 1;
+
+  const getPageNumbers = () => {
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
   const { data : candidateSkills, isLoading : candidateSkillsLoading, } = useCandidateSkills(selectedUser?._id)
 
   const { data : assessmentHistory, isLoading : assessmentHistoryLoading, } = useCandidateAssessmentHistory(selectedUser?._id)
@@ -167,6 +177,31 @@ const UserManagementModule: React.FC = () => {
           ))
         )}
       </div>
+
+      {totalPages > 1 && (
+        <Pagination className="mt-2">
+          <PaginationPrevious
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          />
+          <PaginationContent>
+            {getPageNumbers().map((num) => (
+              <PaginationItem key={num}>
+                <PaginationLink
+                  isActive={num === page}
+                  onClick={() => setPage(num)}
+                >
+                  {num}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+          </PaginationContent>
+          <PaginationNext
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+          />
+        </Pagination>
+      )}
 
       {/* Performance Modal */}
       {(selectedUser?._id && !assessmentHistoryLoading && !candidateSkillsLoading) && (

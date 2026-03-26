@@ -1,4 +1,4 @@
-import { Copy, Edit2, Plus, Trash2 } from "lucide-react";
+import { Copy, Edit2, Mail, Plus, Send, Trash2, Users, X } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -7,8 +7,8 @@ import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Textarea } from "../ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { useState } from "react"
-import { useJobs } from "../../hooks/useJobs";
+import { useEffect, useState } from "react"
+import { useJobApplicants, useJobs } from "../../hooks/useJobs";
 import { useAuth } from "../../context/AuthContext";
 import type { Department } from "../../interface/settings.interface";
 import { useDepartments } from "../../hooks/useSettings";
@@ -23,14 +23,22 @@ const JobsModule = () => {
     const { user } = useAuth()
     const [page, setPage] = useState(1)
     const limit = 20
+    const applicantLimit = 10
     const { data: departmentsData } = useDepartments()
     const [isEditing, setIsEditing] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [currentJob, setCurrentJob] = useState<Partial<IJob>>({});
+    const [selectedApplicantsJob, setSelectedApplicantsJob] = useState<IJob | null>(null);
+    const [applicantsPage, setApplicantsPage] = useState(1);
     const { data: jobsData, isLoading: jobsLoading, refetch: refetchJobs } = useJobs(!!user && user.role == "admin", { page, limit })
+    const { data: applicantsData, isLoading: applicantsLoading } = useJobApplicants(
+        !!selectedApplicantsJob?._id,
+        selectedApplicantsJob?._id,
+        { page: applicantsPage, limit: applicantLimit },
+    )
     const totalPages = jobsData?.meta?.totalPages || 1;
+    const applicantsTotalPages = applicantsData?.meta?.totalPages || 1;
 
-    // Function to generate an array of page numbers with ellipsis
     const getPageNumbers = () => {
         const pages = [];
         for (let i = 1; i <= totalPages; i++) {
@@ -38,6 +46,18 @@ const JobsModule = () => {
         }
         return pages;
     };
+
+    const getApplicantPageNumbers = () => {
+        const pages = [];
+        for (let i = 1; i <= applicantsTotalPages; i++) {
+            pages.push(i);
+        }
+        return pages;
+    };
+
+    useEffect(() => {
+        setApplicantsPage(1)
+    }, [selectedApplicantsJob?._id])
 
     const rangeRegex = /^\d*\s?-?\s?\d*$/;
 
@@ -150,6 +170,12 @@ const JobsModule = () => {
         }
     };
 
+    const handleInviteApplicant = (candidate: { full_name: string; email: string }, jobTitle: string) => {
+        const subject = encodeURIComponent(`Interview Invitation - ${jobTitle}`);
+        const body = encodeURIComponent(`Dear ${candidate.full_name},\n\nThank you for applying for the ${jobTitle} role on Workervet. We would like to invite you for an interview to discuss your application further.\n\nPlease let us know your availability for the coming week.\n\nBest regards,\nThe Hiring Team`);
+        window.location.href = `mailto:${candidate.email}?subject=${subject}&body=${body}`;
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center border-b border-slate-200 pb-6">
@@ -201,7 +227,7 @@ const JobsModule = () => {
                                     value={currentJob.job_description || ''}
                                     onChange={e => setCurrentJob({ ...currentJob, job_description: e.target.value })}
                                     required
-                                    className="min-h-[100px]"
+                                    className="min-h-25"
                                 />
                             </div>
 
@@ -210,7 +236,7 @@ const JobsModule = () => {
                                 <Textarea
                                     value={currentJob.requirements || ''}
                                     onChange={e => setCurrentJob({ ...currentJob, requirements: e.target.value })}
-                                    className="min-h-[100px]"
+                                    className="min-h-25"
                                     placeholder="- Requirement 1&#10;- Requirement 2"
                                 />
                             </div>
@@ -257,7 +283,7 @@ const JobsModule = () => {
                     {
                         jobsLoading ? <JobCardSkeleton /> :
                             jobsData?.data?.map(job => (
-                                <div key={job._id} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex justify-between items-start group hover:border-blue-200 transition-all">
+                                <div key={job._id} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex justify-between items-start group hover:border-blue-200 transition-all gap-4">
                                     <div>
                                         <div className="flex items-center gap-3 mb-1">
                                             <h3 className="font-bold text-lg text-slate-900">{job.job_title}</h3>
@@ -267,8 +293,19 @@ const JobsModule = () => {
                                         </div>
                                         <p className="text-sm text-slate-500 mb-3">{(job?.department as Department)?.department_name} • {job.location}</p>
                                         <p className="text-sm text-slate-600 line-clamp-2 max-w-2xl">{job.job_description}</p>
+                                        <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                                            <Users className="w-3.5 h-3.5" />
+                                            <span>{job.application_count || 0} applicant{job.application_count === 1 ? '' : 's'}</span>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity flex-wrap justify-end shrink-0">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setSelectedApplicantsJob(job as IJob)}
+                                        >
+                                            <Users className="w-4 h-4 mr-2" /> Applicants
+                                        </Button>
                                         <Switch
                                             checked={!!job.is_active}
                                             onCheckedChange={() => handleToggleActive(job as IJob)}
@@ -326,6 +363,117 @@ const JobsModule = () => {
 
                 </div>
             )}
+
+            {selectedApplicantsJob?._id && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+                    onClick={() => setSelectedApplicantsJob(null)}
+                >
+                    <div
+                        className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-900">Applicants</h3>
+                                <p className="text-sm text-slate-500 mt-1">
+                                    {selectedApplicantsJob.job_title} • {applicantsData?.meta?.total || selectedApplicantsJob.application_count || 0} applicant{(applicantsData?.meta?.total || selectedApplicantsJob.application_count || 0) === 1 ? '' : 's'}
+                                </p>
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={() => setSelectedApplicantsJob(null)}>
+                                <X className="w-5 h-5 text-slate-400 hover:text-slate-900" />
+                            </Button>
+                        </div>
+
+                        <div className="p-6 overflow-y-auto custom-scrollbar space-y-4">
+                            {applicantsLoading ? (
+                                Array.from({ length: 4 }).map((_, idx) => <ApplicantRowSkeleton key={idx} />)
+                            ) : applicantsData?.data?.length === 0 ? (
+                                <div className="text-center py-16 bg-white rounded-xl border border-dashed border-slate-200">
+                                    <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                                    <p className="text-slate-500">No applicants for this job yet.</p>
+                                </div>
+                            ) : (
+                                applicantsData?.data?.map((application) => (
+                                    <div key={application._id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+                                        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-3 flex-wrap">
+                                                    <h4 className="text-base font-semibold text-slate-900">{application.applicant.full_name}</h4>
+                                                    <Badge variant={application.is_certified ? 'success' : 'secondary'}>
+                                                        {application.is_certified ? 'Certified' : 'Applied'}
+                                                    </Badge>
+                                                </div>
+                                                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                                    <div className="flex items-center gap-2 text-slate-600 min-w-0">
+                                                        <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                                                        <span className="truncate">{application.applicant.email}</span>
+                                                    </div>
+                                                    <div className="text-slate-600">
+                                                        <span className="font-medium text-slate-700">Phone:</span> {application.applicant.phone || 'N/A'}
+                                                    </div>
+                                                    <div className="text-slate-600">
+                                                        <span className="font-medium text-slate-700">Target Department:</span> {application.applicant.target_department ? (application.applicant.target_department as Department).department_name : 'N/A'}
+                                                    </div>
+                                                    <div className="text-slate-600">
+                                                        <span className="font-medium text-slate-700">Applied:</span> {new Date(application.createdAt).toLocaleDateString()}
+                                                    </div>
+                                                </div>
+                                                {application.applicant.cv?.filename && (
+                                                    <div className="mt-3">
+                                                        <a
+                                                            href={application.applicant.cv.url}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                                                        >
+                                                            View CV: {application.applicant.cv.filename}
+                                                        </a>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                <Button
+                                                    onClick={() => handleInviteApplicant(application.applicant, selectedApplicantsJob.job_title)}
+                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                                >
+                                                    <Send className="w-4 h-4 mr-2" /> Invite Candidate
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+
+                            {applicantsTotalPages > 1 && (
+                                <Pagination className="mt-2">
+                                    <PaginationPrevious
+                                        onClick={() => setApplicantsPage((p) => Math.max(1, p - 1))}
+                                        disabled={applicantsPage === 1}
+                                    />
+                                    <PaginationContent>
+                                        {getApplicantPageNumbers().map((num) => (
+                                            <PaginationItem key={num}>
+                                                <PaginationLink
+                                                    isActive={num === applicantsPage}
+                                                    onClick={() => setApplicantsPage(num)}
+                                                >
+                                                    {num}
+                                                </PaginationLink>
+                                            </PaginationItem>
+                                        ))}
+                                    </PaginationContent>
+                                    <PaginationNext
+                                        onClick={() => setApplicantsPage((p) => Math.min(applicantsTotalPages, p + 1))}
+                                        disabled={applicantsPage === applicantsTotalPages}
+                                    />
+                                </Pagination>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -350,6 +498,29 @@ function JobCardSkeleton() {
             <div className="flex gap-2">
                 <Skeleton className="h-8 w-8 rounded-md" />
                 <Skeleton className="h-8 w-8 rounded-md" />
+            </div>
+        </div>
+    );
+}
+
+function ApplicantRowSkeleton() {
+    return (
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm animate-pulse">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div className="flex-1 space-y-3">
+                    <div className="flex items-center gap-3">
+                        <Skeleton className="h-5 w-40" />
+                        <Skeleton className="h-5 w-20 rounded-full" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-4 w-44" />
+                        <Skeleton className="h-4 w-28" />
+                    </div>
+                    <Skeleton className="h-4 w-52" />
+                </div>
+                <Skeleton className="h-10 w-40 rounded-md" />
             </div>
         </div>
     );

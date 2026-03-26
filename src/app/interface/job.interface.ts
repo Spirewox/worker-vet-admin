@@ -13,6 +13,7 @@ export interface IJob {
   salary_range?: string;
 
   is_active?: boolean;
+  application_count?: number;
 
   is_certified ?: boolean,
   is_applied ?: boolean,
