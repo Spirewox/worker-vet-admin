@@ -13,7 +13,7 @@ import {
   Shield,
   Briefcase,
   LayoutGrid,
-
+  UserCog,
   Settings,
 } from 'lucide-react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -60,6 +60,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 label="Candidates"
               />
               <NavTab
+                active={isActive('/admin/admins')}
+                onClick={() => navigate('/admin/admins')}
+                icon={<UserCog className="w-4 h-4" />}
+                label="Admins"
+              />
+              <NavTab
                 active={isActive('/admin/questions')}
                 onClick={() => navigate('/admin/questions')}
                 icon={<FileText className="w-4 h-4" />}
@@ -100,6 +106,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
         <div className="md:hidden overflow-x-auto flex items-center gap-1 px-4 pb-2 -mt-1 no-scrollbar">
           <MobileNavTab active={isActive('/admin')} onClick={() => navigate('/admin')} label="Dashboard" />
           <MobileNavTab active={isActive('/admin/users')} onClick={() => navigate('/admin/users')} label="Candidates" />
+          <MobileNavTab active={isActive('/admin/admins')} onClick={() => navigate('/admin/admins')} label="Admins" />
           <MobileNavTab active={isActive('/admin/questions')} onClick={() => navigate('/admin/questions')} label="Question Bank" />
           <MobileNavTab active={isActive('/admin/jobs')} onClick={() => navigate('/admin/jobs')} label="Job Board" />
           <MobileNavTab active={isActive('/admin/settings')} onClick={() => navigate('/admin/settings')} label="Settings" />

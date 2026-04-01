@@ -158,3 +158,25 @@ export const useDepartmentsPassRate= (enabled : boolean) => {
     retry : false,
   });
 };
+
+export interface AdminUser {
+  _id: string;
+  full_name: string;
+  email: string;
+  status: 'active' | 'inactive';
+  createdAt: string;
+}
+
+const fetchAdmins = async () => {
+  const response = await axiosGet('users/admins', true);
+  return response as AdminUser[];
+};
+
+export const useAdmins = (enabled: boolean) => {
+  return useQuery({
+    queryKey: ['admins'],
+    enabled,
+    queryFn: fetchAdmins,
+    retry: false,
+  });
+};
