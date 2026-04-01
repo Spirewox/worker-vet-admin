@@ -2,19 +2,26 @@ import {useState} from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Eye, EyeOff } from "lucide-react";
 import { useDepartments, useSkills } from "../../hooks/useSettings";
 import type { Department, Skill } from "../../interface/settings.interface";
 import { toast } from "react-toastify";
 import { axiosDelete, axiosPost } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
 
 const SettingsModule = () => {
     const {data : departments,refetch : refetchDepartments, isLoading : departmentsLoading} = useDepartments()
     const {data : skills,refetch : refetchskills, isLoading : skillsLoading} = useSkills()
+    const { logout } = useAuth();
     const [newDept, setNewDept] = useState('');
     const [newSkill, setNewSkill] = useState('');
     const [isSubmittingSkill, setIsSubmittingSkill] = useState(false)
     const [isSubmittingDept, setIsSubmittingDept] = useState(false)
+
+    // Change password state
+    const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
+    const [showPasswords, setShowPasswords] = useState({ current: false, newPwd: false, confirm: false });
 
     const handleAddSkill = async(e: React.FormEvent) => {
         try {
@@ -88,6 +95,33 @@ const SettingsModule = () => {
             setIsSubmittingDept(false)
         }
         
+    };
+
+    const handleChangePassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            toast.error("New password and confirm password do not match");
+            return;
+        }
+        if (passwordForm.newPassword.length < 8) {
+            toast.error("New password must be at least 8 characters");
+            return;
+        }
+        try {
+            setIsSubmittingPassword(true);
+            await axiosPost('auth/reset-password', {
+                currentPassword: passwordForm.currentPassword,
+                newPassword: passwordForm.newPassword,
+            }, true);
+            toast.success("Password changed successfully. Please log in again.");
+            setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            await logout();
+        } catch (error) {
+            if (error instanceof Error) toast.error(error.message);
+            else toast.error("An error occurred while changing password");
+        } finally {
+            setIsSubmittingPassword(false);
+        }
     };
 
     return (
@@ -175,6 +209,71 @@ const SettingsModule = () => {
                     </div>
                     ))}
                 </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Change Password</CardTitle>
+                    <CardDescription>Update your account password. You will be logged out after a successful change.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
+                        <div className="relative">
+                            <Input
+                                type={showPasswords.current ? "text" : "password"}
+                                placeholder="Current Password"
+                                value={passwordForm.currentPassword}
+                                onChange={e => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                            >
+                                {showPasswords.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                        <div className="relative">
+                            <Input
+                                type={showPasswords.newPwd ? "text" : "password"}
+                                placeholder="New Password (min. 8 characters)"
+                                value={passwordForm.newPassword}
+                                onChange={e => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPasswords(prev => ({ ...prev, newPwd: !prev.newPwd }))}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                            >
+                                {showPasswords.newPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                        <div className="relative">
+                            <Input
+                                type={showPasswords.confirm ? "text" : "password"}
+                                placeholder="Confirm New Password"
+                                value={passwordForm.confirmPassword}
+                                onChange={e => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                            >
+                                {showPasswords.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                        <Button
+                            type="submit"
+                            disabled={!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword || isSubmittingPassword}
+                        >
+                            {isSubmittingPassword ? "Updating..." : "Change Password"}
+                        </Button>
+                    </form>
                 </CardContent>
             </Card>
         </div>
