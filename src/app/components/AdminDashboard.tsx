@@ -6,15 +6,19 @@ import {
   CardContent 
 } from './ui/card';
 
-import { 
-  Users, 
-  FileText, 
+import {
+  Users,
+  FileText,
   LogOut,
   Shield,
   Briefcase,
   LayoutGrid,
   UserCog,
   Settings,
+  GraduationCap,
+  Award,
+  Wallet,
+  History,
 } from 'lucide-react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
@@ -78,6 +82,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
                 label="Jobs"
               />
               <NavTab
+                active={isActive('/admin/training')}
+                onClick={() => navigate('/admin/training')}
+                icon={<GraduationCap className="w-4 h-4" />}
+                label="Training"
+              />
+              <NavTab
+                active={isActive('/admin/certificates')}
+                onClick={() => navigate('/admin/certificates')}
+                icon={<Award className="w-4 h-4" />}
+                label="Certificates"
+              />
+              <NavTab
+                active={isActive('/admin/payments')}
+                onClick={() => navigate('/admin/payments')}
+                icon={<Wallet className="w-4 h-4" />}
+                label="Payments"
+              />
+              <NavTab
+                active={isActive('/admin/audit')}
+                onClick={() => navigate('/admin/audit')}
+                icon={<History className="w-4 h-4" />}
+                label="Audit"
+              />
+              <NavTab
                 active={isActive('/admin/settings')}
                 onClick={() => navigate('/admin/settings')}
                 icon={<Settings className="w-4 h-4" />}
@@ -109,6 +137,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           <MobileNavTab active={isActive('/admin/admins')} onClick={() => navigate('/admin/admins')} label="Admins" />
           <MobileNavTab active={isActive('/admin/questions')} onClick={() => navigate('/admin/questions')} label="Question Bank" />
           <MobileNavTab active={isActive('/admin/jobs')} onClick={() => navigate('/admin/jobs')} label="Job Board" />
+          <MobileNavTab active={isActive('/admin/training')} onClick={() => navigate('/admin/training')} label="Training" />
+          <MobileNavTab active={isActive('/admin/certificates')} onClick={() => navigate('/admin/certificates')} label="Certificates" />
+          <MobileNavTab active={isActive('/admin/payments')} onClick={() => navigate('/admin/payments')} label="Payments" />
+          <MobileNavTab active={isActive('/admin/audit')} onClick={() => navigate('/admin/audit')} label="Audit" />
           <MobileNavTab active={isActive('/admin/settings')} onClick={() => navigate('/admin/settings')} label="Settings" />
         </div>
       </header>

@@ -1,10 +1,12 @@
-import { Activity, BarChart3, Briefcase, FileText, TrendingUp, Users } from "lucide-react";
+import { Activity, BarChart3, Briefcase, FileText, TrendingUp, Users, Wallet, GraduationCap, Award, Printer } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { StatCard } from "../AdminDashboard";
 import { Badge } from "../ui/badge";
 import { useDashboardMetrics, useGlobalSkillPerformance } from "../../hooks/useDashboard";
 import { useAuth } from "../../context/AuthContext";
 import { useDepartmentsPassRate, useRecentAssessments } from "../../hooks/useCandidates";
+import { useRevenueSummary } from "../../hooks/usePayments";
+import { formatNaira } from "../../lib/format";
 
 const DashboardOverviewModule: React.FC = () => {
   const {user} = useAuth()
@@ -15,6 +17,7 @@ const DashboardOverviewModule: React.FC = () => {
 
 
   const {data : performaceSkills,isLoading : performanceSkillsLoading} = useGlobalSkillPerformance()
+  const {data : revenue} = useRevenueSummary()
 
   return (
     <div className="space-y-8">
@@ -56,6 +59,14 @@ const DashboardOverviewModule: React.FC = () => {
           description="Open positions"
           trend="Stable"
         />
+      </div>
+
+      {/* Revenue */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard title="Total Revenue" value={formatNaira(revenue?.total)} icon={<Wallet className="w-5 h-5 text-emerald-600" />} description="All paid actions" trend={revenue?.totalMoM != null ? `+${revenue.totalMoM}% this month` : undefined} trendUp />
+        <StatCard title="Training Sales" value={formatNaira(revenue?.training)} icon={<GraduationCap className="w-5 h-5 text-indigo-600" />} description="Course purchases" />
+        <StatCard title="Certificate Sales" value={formatNaira(revenue?.certificate)} icon={<Award className="w-5 h-5 text-amber-600" />} description="Issued credentials" />
+        <StatCard title="Hard-copy Fees" value={formatNaira(revenue?.hardcopy)} icon={<Printer className="w-5 h-5 text-slate-600" />} description="Shipped certificates" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

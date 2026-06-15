@@ -1,18 +1,46 @@
-import {useState} from "react"
+import {useState, useEffect} from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Trash2, Eye, EyeOff } from "lucide-react";
+import { Trash2, Eye, EyeOff, Wallet } from "lucide-react";
 import { useDepartments, useSkills } from "../../hooks/useSettings";
+import { usePricing } from "../../hooks/usePricing";
 import type { Department, Skill } from "../../interface/settings.interface";
 import { toast } from "react-toastify";
-import { axiosDelete, axiosPost } from "../../lib/api";
+import { axiosDelete, axiosPatch, axiosPost } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
+import { CURRENCY_SYMBOL } from "../../lib/format";
 
 const SettingsModule = () => {
     const {data : departments,refetch : refetchDepartments, isLoading : departmentsLoading} = useDepartments()
     const {data : skills,refetch : refetchskills, isLoading : skillsLoading} = useSkills()
+    const {data : pricing, refetch : refetchPricing} = usePricing()
     const { logout } = useAuth();
+
+    // Pricing config
+    const [pricingForm, setPricingForm] = useState({ training_price: 0, certificate_price: 0, hardcopy_fee: 0 });
+    const [isSubmittingPricing, setIsSubmittingPricing] = useState(false);
+    useEffect(() => {
+        if (pricing) setPricingForm({
+            training_price: pricing.training_price ?? 0,
+            certificate_price: pricing.certificate_price ?? 0,
+            hardcopy_fee: pricing.hardcopy_fee ?? 0,
+        });
+    }, [pricing]);
+
+    const handleSavePricing = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            setIsSubmittingPricing(true);
+            await axiosPatch('settings/pricing', pricingForm, true);
+            toast.success("Pricing updated");
+            refetchPricing();
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to update pricing");
+        } finally {
+            setIsSubmittingPricing(false);
+        }
+    };
     const [newDept, setNewDept] = useState('');
     const [newSkill, setNewSkill] = useState('');
     const [isSubmittingSkill, setIsSubmittingSkill] = useState(false)
@@ -209,6 +237,35 @@ const SettingsModule = () => {
                     </div>
                     ))}
                 </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Wallet className="w-5 h-5 text-slate-500" /> Pricing</CardTitle>
+                    <CardDescription>Set the fees (in {CURRENCY_SYMBOL}) candidates pay for training and certificates.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSavePricing} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Training course ({CURRENCY_SYMBOL})</label>
+                                <Input type="number" min="0" value={pricingForm.training_price}
+                                    onChange={e => setPricingForm(p => ({ ...p, training_price: Number(e.target.value) }))} className="mt-1" />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Certificate ({CURRENCY_SYMBOL})</label>
+                                <Input type="number" min="0" value={pricingForm.certificate_price}
+                                    onChange={e => setPricingForm(p => ({ ...p, certificate_price: Number(e.target.value) }))} className="mt-1" />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Hard-copy fee ({CURRENCY_SYMBOL})</label>
+                                <Input type="number" min="0" value={pricingForm.hardcopy_fee}
+                                    onChange={e => setPricingForm(p => ({ ...p, hardcopy_fee: Number(e.target.value) }))} className="mt-1" />
+                            </div>
+                        </div>
+                        <Button type="submit" disabled={isSubmittingPricing}>{isSubmittingPricing ? "Saving..." : "Save Pricing"}</Button>
+                    </form>
                 </CardContent>
             </Card>
 

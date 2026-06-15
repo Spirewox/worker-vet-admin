@@ -10,6 +10,10 @@ import QuestionsModule from './components/admin/QuestionsModule';
 import JobsModule from './components/admin/JobsModule';
 import SettingsModule from './components/admin/SettingsModule';
 import AdminsModule from './components/admin/AdminsModule';
+import TrainingModule from './components/admin/TrainingModule';
+import CertificatesModule from './components/admin/CertificatesModule';
+import PaymentsModule from './components/admin/PaymentsModule';
+import AuditModule from './components/admin/AuditModule';
 
 // // Protected Route Component
 // const ProtectedRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
@@ -66,6 +70,10 @@ function AppContent() {
         <Route path="admins" element={<AdminsModule />} />
         <Route path="questions" element={<QuestionsModule />} />
         <Route path="jobs" element={<JobsModule />} />
+        <Route path="training" element={<TrainingModule />} />
+        <Route path="certificates" element={<CertificatesModule />} />
+        <Route path="payments" element={<PaymentsModule />} />
+        <Route path="audit" element={<AuditModule />} />
         <Route path="settings" element={<SettingsModule />} />
       </Route>
 
