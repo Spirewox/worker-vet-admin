@@ -140,8 +140,24 @@ const candidateSkills = {
 };
 
 const assessmentHistory = [
-  { date: "2026-06-12T10:00:00Z", job_name: "Care Assistant", department_name: "Patient Care", score: "9/10", percentage: 90, result: "pass" },
-  { date: "2026-05-20T10:00:00Z", job_name: "", department_name: "Administration", score: "4/10", percentage: 48, result: "fail" },
+  {
+    date: "2026-06-12T10:00:00Z", job_name: "Care Assistant", department_name: "Patient Care", score: "9/10", percentage: 90, result: "pass",
+    skills: [
+      { skill_name: "Trust", percentage: 92 },
+      { skill_name: "Integrity", percentage: 88 },
+      { skill_name: "Ethics", percentage: 90 },
+      { skill_name: "Communication", percentage: 88 },
+    ],
+  },
+  {
+    date: "2026-05-20T10:00:00Z", job_name: "", department_name: "Administration", score: "4/10", percentage: 48, result: "fail",
+    skills: [
+      { skill_name: "Trust", percentage: 60 },
+      { skill_name: "Integrity", percentage: 55 },
+      { skill_name: "Ethics", percentage: 40 },
+      { skill_name: "Communication", percentage: 38 },
+    ],
+  },
 ];
 
 const resolve = (config: InternalAxiosRequestConfig): unknown | undefined => {

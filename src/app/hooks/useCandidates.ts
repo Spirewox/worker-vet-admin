@@ -93,7 +93,9 @@ export interface AssessmentHistory {
   department_name : string,
   "score": string,
   "percentage": number,
-  "result": "pass" | "fail"
+  "result": "pass" | "fail",
+  // Optional per-skill score breakdown for this assessment.
+  skills ?: { skill_name: string; percentage: number }[]
 }
 
 

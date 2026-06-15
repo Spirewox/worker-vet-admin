@@ -1,6 +1,6 @@
-import {useEffect, useState} from "react"
+import {Fragment, useEffect, useState} from "react"
 import { Input } from "../ui/input";
-import { BarChart, Briefcase, Calendar, Mail, Search, Send, TrendingUp, Users, X } from "lucide-react";
+import { BarChart, Briefcase, Calendar, ChevronDown, Mail, Search, Send, TrendingUp, Users, X } from "lucide-react";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -20,6 +20,7 @@ const UserManagementModule: React.FC = () => {
   const [debouncedSearch, setDebouncedSearch] = useState(search);
   const limit = 20
   const [selectedUser, setSelectedUser] = useState<CandidateAct >({} as CandidateAct);
+  const [expandedHistory, setExpandedHistory] = useState<number | null>(null);
   const {data : usersData} = useCandidates({
     enabled : !!user && user.role == "admin",
     search : debouncedSearch,
@@ -295,21 +296,53 @@ const UserManagementModule: React.FC = () => {
                                     assessmentHistory?.length === 0 ? (
                                         <tr><td colSpan={4} className="px-4 py-8 text-center text-slate-400">No history available</td></tr>
                                     ) : (
-                                        assessmentHistory?.map((a,idx) => (
-                                            <tr key={idx} className="hover:bg-slate-50/50">
+                                        assessmentHistory?.map((a,idx) => {
+                                            const hasBreakdown = !!a.skills?.length;
+                                            const open = expandedHistory === idx;
+                                            return (
+                                            <Fragment key={idx}>
+                                            <tr className={`hover:bg-slate-50/50 ${hasBreakdown ? 'cursor-pointer' : ''}`}
+                                                onClick={() => hasBreakdown && setExpandedHistory(open ? null : idx)}>
                                                 <td className="px-4 py-3 text-slate-600">{new Date(a.date).toLocaleDateString()}</td>
                                                 <td className="px-4 py-3 font-medium text-slate-900">
                                                     {a.department_name}
                                                     {a.job_name && <span className="ml-2 text-xs font-normal text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">Job App</span>}
                                                 </td>
-                                                <td className="px-4 py-3 text-slate-600">{a.score} ({a.percentage}%)</td>
+                                                <td className="px-4 py-3 text-slate-600">
+                                                    <span className="inline-flex items-center gap-1.5">
+                                                        {a.score} ({a.percentage}%)
+                                                        {hasBreakdown && <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />}
+                                                    </span>
+                                                </td>
                                                 <td className="px-4 py-3 text-right">
                                                     <Badge variant={a.result == "pass" ? "success" : "destructive"}>
                                                         {a.result == "pass"  ? "PASS" : "FAIL"}
                                                     </Badge>
                                                 </td>
                                             </tr>
-                                        ))
+                                            {open && hasBreakdown && (
+                                                <tr className="bg-slate-50/60">
+                                                    <td colSpan={4} className="px-4 py-4">
+                                                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Score breakdown by category</p>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5">
+                                                            {a.skills!.map((sk) => (
+                                                                <div key={sk.skill_name} className="space-y-1">
+                                                                    <div className="flex justify-between text-xs">
+                                                                        <span className="text-slate-600">{sk.skill_name}</span>
+                                                                        <span className={`font-semibold ${sk.percentage >= 70 ? 'text-emerald-600' : sk.percentage >= 40 ? 'text-amber-600' : 'text-red-600'}`}>{sk.percentage}%</span>
+                                                                    </div>
+                                                                    <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
+                                                                        <div className={`h-full rounded-full ${sk.percentage >= 70 ? 'bg-emerald-500' : sk.percentage >= 40 ? 'bg-amber-500' : 'bg-red-500'}`} style={{ width: `${sk.percentage}%` }} />
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                            </Fragment>
+                                            );
+                                        })
                                     )}
                                 </tbody>
                             </table>
