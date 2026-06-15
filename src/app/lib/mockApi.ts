@@ -262,7 +262,14 @@ const resolve = (config: InternalAxiosRequestConfig): unknown | undefined => {
   if (path === "users/admins") return admins;
   if (path.startsWith("users/candidates/recent-activity")) return candidatesRes;
 
-  if (path === "jobs") return jobsRes;
+  if (path === "jobs") {
+    const search = (params.get("search") || "").toLowerCase();
+    const dept = params.get("department") || "";
+    let list = jobsRes.data;
+    if (search) list = list.filter((j) => j.job_title.toLowerCase().includes(search));
+    if (dept) list = list.filter((j) => j.department._id === dept);
+    return { data: list, meta: { ...jobsRes.meta, total: list.length, totalPages: 1 } };
+  }
   if (/^jobs\/[^/]+\/applicants$/.test(path)) {
     return {
       data: [

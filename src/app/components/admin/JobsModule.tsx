@@ -1,9 +1,10 @@
-import { Copy, Edit2, Mail, Plus, Send, Trash2, Users, X } from "lucide-react";
+import { Copy, Edit2, Mail, MapPin, Plus, Search, Send, Trash2, Users, Wallet, X } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Switch } from "../ui/switch";
 import { Label } from "../ui/label";
+import { NativeSelect } from "../ui/native-select";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Textarea } from "../ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
@@ -31,7 +32,27 @@ const JobsModule = () => {
     const [currentJob, setCurrentJob] = useState<Partial<IJob>>({});
     const [selectedApplicantsJob, setSelectedApplicantsJob] = useState<IJob | null>(null);
     const [applicantsPage, setApplicantsPage] = useState(1);
-    const { data: jobsData, isLoading: jobsLoading, refetch: refetchJobs } = useJobs(!!user && user.role == "admin", { page, limit })
+
+    // Filters
+    const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [departmentFilter, setDepartmentFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+
+    useEffect(() => {
+        const h = setTimeout(() => setDebouncedSearch(search.trim()), 400);
+        return () => clearTimeout(h);
+    }, [search]);
+    useEffect(() => { setPage(1); }, [debouncedSearch, departmentFilter]);
+
+    const hasFilters = !!debouncedSearch || !!departmentFilter || statusFilter !== 'all';
+    const clearFilters = () => { setSearch(''); setDebouncedSearch(''); setDepartmentFilter(''); setStatusFilter('all'); };
+
+    const { data: jobsData, isLoading: jobsLoading, refetch: refetchJobs } = useJobs(!!user && user.role == "admin", { page, limit, search: debouncedSearch || undefined, department: departmentFilter || undefined })
+
+    const visibleJobs = (jobsData?.data ?? []).filter(j =>
+        statusFilter === 'all' ? true : statusFilter === 'active' ? j.is_active : !j.is_active
+    );
     const { data: applicantsData, isLoading: applicantsLoading, refetch: refetchApplicants } = useJobApplicants(
         !!selectedApplicantsJob?._id,
         selectedApplicantsJob?._id,
@@ -88,11 +109,7 @@ const JobsModule = () => {
             setIsEditing(false);
             setCurrentJob({});
         } catch (error) {
-            console.log(error)
-            if (error instanceof Error)
-                toast.error(error.message)
-
-            toast.error("Failed to save job posting")
+            toast.error(error instanceof Error ? error.message : "Failed to save job posting")
         } finally {
             setIsSubmitting(false)
         }
@@ -100,16 +117,14 @@ const JobsModule = () => {
     };
 
     const handleDelete = async (id: string) => {
+        if (!confirm('Are you sure you want to delete this job posting?')) return;
         try {
-            if (confirm('Are you sure you want to delete this job posting?')) {
-                await axiosDelete(`jobs/${id}`, true)
-            }
+            await axiosDelete(`jobs/${id}`, true)
             toast.success("Job deleted successfully")
+            refetchJobs()
         } catch (error) {
-            if (error instanceof Error) toast.error(error.message)
-            toast.error("Failed to delete job")
+            toast.error(error instanceof Error ? error.message : "Failed to delete job")
         }
-
     };
 
     const formatNairaRange = (range: string) => {
@@ -207,7 +222,7 @@ const JobsModule = () => {
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Job Title</Label>
                                     <Input
@@ -239,7 +254,7 @@ const JobsModule = () => {
                                     value={currentJob.job_description || ''}
                                     onChange={e => setCurrentJob({ ...currentJob, job_description: e.target.value })}
                                     required
-                                    className="min-h-25"
+                                    className="min-h-[100px]"
                                 />
                             </div>
 
@@ -248,12 +263,12 @@ const JobsModule = () => {
                                 <Textarea
                                     value={currentJob.requirements || ''}
                                     onChange={e => setCurrentJob({ ...currentJob, requirements: e.target.value })}
-                                    className="min-h-25"
+                                    className="min-h-[100px]"
                                     placeholder="- Requirement 1&#10;- Requirement 2"
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Location</Label>
                                     <Input
@@ -278,7 +293,7 @@ const JobsModule = () => {
                                                 salary_range: value
                                             });
                                         }}
-                                        placeholder="e.g. $80k - $100k"
+                                        placeholder="e.g. 80000 - 120000 (₦)"
                                     />
                                 </div>
                             </div>
@@ -291,10 +306,29 @@ const JobsModule = () => {
                     </CardContent>
                 </Card>
             ) : (
+              <>
+                {/* Toolbar */}
+                <div className="flex flex-col lg:flex-row gap-3">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input className="pl-9" placeholder="Search jobs by title..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                    </div>
+                    <NativeSelect value={departmentFilter} onChange={(e) => setDepartmentFilter(e.target.value)} className="lg:w-52">
+                        <option value="">All departments</option>
+                        {departmentsData?.map((d) => <option key={d._id} value={d._id}>{d.department_name}</option>)}
+                    </NativeSelect>
+                    <NativeSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')} className="lg:w-40">
+                        <option value="all">All statuses</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </NativeSelect>
+                    {hasFilters && <Button variant="outline" onClick={clearFilters}><X className="w-4 h-4 mr-1" /> Clear</Button>}
+                </div>
+
                 <div className="grid gap-4">
                     {
                         jobsLoading ? <JobCardSkeleton /> :
-                            jobsData?.data?.map(job => (
+                            visibleJobs.map(job => (
                                 <div key={job._id} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex justify-between items-start group hover:border-blue-200 transition-all gap-4">
                                     <div>
                                         <div className="flex items-center gap-3 mb-1">
@@ -303,14 +337,21 @@ const JobsModule = () => {
                                                 {job.is_active ? 'ACTIVE' : 'INACTIVE'}
                                             </Badge>
                                         </div>
-                                        <p className="text-sm text-slate-500 mb-3">{(job?.department as Department)?.department_name} • {job.location}</p>
+                                        <p className="text-sm text-slate-500 mb-3 flex items-center flex-wrap gap-x-3 gap-y-1">
+                                            <span>{(job?.department as Department)?.department_name}</span>
+                                            <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {job.location}</span>
+                                            {job.salary_range && <span className="flex items-center gap-1"><Wallet className="w-3.5 h-3.5" /> {job.salary_range}</span>}
+                                        </p>
                                         <p className="text-sm text-slate-600 line-clamp-2 max-w-2xl">{job.job_description}</p>
-                                        <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                                        <button
+                                            onClick={() => setSelectedApplicantsJob(job as IJob)}
+                                            className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-slate-600 hover:text-blue-600"
+                                        >
                                             <Users className="w-3.5 h-3.5" />
                                             <span>{job.application_count || 0} applicant{job.application_count === 1 ? '' : 's'}</span>
-                                        </div>
+                                        </button>
                                     </div>
-                                    <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity flex-wrap justify-end shrink-0">
+                                    <div className="flex items-center gap-2 flex-wrap justify-end shrink-0">
                                         <Button
                                             variant="outline"
                                             size="sm"
@@ -340,9 +381,13 @@ const JobsModule = () => {
                                     </div>
                                 </div>
                             ))}
-                    {jobsData?.data?.length === 0 && (
+                    {!jobsLoading && visibleJobs.length === 0 && (
                         <div className="text-center py-12 bg-white rounded-xl border border-dashed border-slate-200">
-                            <p className="text-slate-500">No jobs posted yet.</p>
+                            <Users className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                            <p className="text-slate-500 mb-4">{hasFilters ? "No jobs match your filters." : "No jobs posted yet."}</p>
+                            {hasFilters
+                                ? <Button variant="outline" onClick={clearFilters}>Clear filters</Button>
+                                : <Button onClick={() => { setCurrentJob({}); setIsEditing(true); }}><Plus className="w-4 h-4 mr-2" /> Post New Job</Button>}
                         </div>
                     )}
 
@@ -374,6 +419,7 @@ const JobsModule = () => {
                     )}
 
                 </div>
+              </>
             )}
 
             {selectedApplicantsJob?._id && (
