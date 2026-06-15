@@ -109,6 +109,23 @@ const auditEntries = [
   { _id: "a3", actor: "Admin User", action: "updated pricing", target: "Certificate fee → ₦50", created_at: "2026-06-10T10:15:00Z" },
 ];
 
+const trends = [
+  { month: "Jan", assessments: 280, passed: 168, pass_rate: 60, revenue: 210000 },
+  { month: "Feb", assessments: 340, passed: 224, pass_rate: 66, revenue: 268000 },
+  { month: "Mar", assessments: 410, passed: 246, pass_rate: 60, revenue: 305000 },
+  { month: "Apr", assessments: 520, passed: 359, pass_rate: 69, revenue: 372000 },
+  { month: "May", assessments: 610, passed: 421, pass_rate: 69, revenue: 430000 },
+  { month: "Jun", assessments: 720, passed: 518, pass_rate: 72, revenue: 505000 },
+];
+
+const funnel = [
+  { stage: "Registered", count: 1240 },
+  { stage: "Took assessment", count: 880 },
+  { stage: "Passed", count: 564 },
+  { stage: "Certified", count: 412 },
+  { stage: "Hired", count: 96 },
+];
+
 const pricing = { training_price: 500, certificate_price: 50, hardcopy_fee: 20 };
 
 const assessmentConfig = { pass_mark: 70, time_limit: 600, max_attempts: 3, retake_cooldown_hours: 24, validity_days: 365 };
@@ -199,6 +216,8 @@ const resolve = (config: InternalAxiosRequestConfig): unknown | undefined => {
   if (path === "assessment/recent") return recentAssessments;
   if (path === "assessment/department/pass-rate") return deptPassRates;
   if (path === "assessment/global/skills") return globalSkills;
+  if (path === "analytics/trends") return trends;
+  if (path === "analytics/funnel") return funnel;
   if (/^assessment\/candidate\/[^/]+\/skills$/.test(path)) return candidateSkills;
   if (/^assessment\/history\/[^/]+$/.test(path)) return assessmentHistory;
 
