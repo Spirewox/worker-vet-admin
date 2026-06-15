@@ -14,6 +14,11 @@ export interface IJob {
 
   is_active?: boolean;
   application_count?: number;
+  // Optional pipeline breakdown for this job's applicants.
+  applicant_stats?: {
+    shortlisted?: number;
+    hired?: number;
+  };
 
   is_certified ?: boolean,
   is_applied ?: boolean,

@@ -1,4 +1,4 @@
-import { Copy, Edit2, Mail, MapPin, Plus, Search, Send, Trash2, Users, Wallet, X } from "lucide-react";
+import { AlertTriangle, Briefcase, CheckCircle2, Copy, Edit2, Mail, MapPin, Plus, Search, Send, Star, Trash2, Users, Wallet, X } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -9,8 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Textarea } from "../ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useEffect, useState } from "react"
-import { useJobApplicants, useJobs } from "../../hooks/useJobs";
+import { useJobApplicants, useJobs, useJobStats } from "../../hooks/useJobs";
 import type { ApplicationStatus } from "../../hooks/useJobs";
+import { StatCard } from "../AdminDashboard";
 import { useAuth } from "../../context/AuthContext";
 import type { Department } from "../../interface/settings.interface";
 import { useDepartments } from "../../hooks/useSettings";
@@ -32,6 +33,8 @@ const JobsModule = () => {
     const [currentJob, setCurrentJob] = useState<Partial<IJob>>({});
     const [selectedApplicantsJob, setSelectedApplicantsJob] = useState<IJob | null>(null);
     const [applicantsPage, setApplicantsPage] = useState(1);
+    const [jobToDelete, setJobToDelete] = useState<IJob | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Filters
     const [search, setSearch] = useState('');
@@ -49,6 +52,7 @@ const JobsModule = () => {
     const clearFilters = () => { setSearch(''); setDebouncedSearch(''); setDepartmentFilter(''); setStatusFilter('all'); };
 
     const { data: jobsData, isLoading: jobsLoading, refetch: refetchJobs } = useJobs(!!user && user.role == "admin", { page, limit, search: debouncedSearch || undefined, department: departmentFilter || undefined })
+    const { data: jobStats } = useJobStats(!!user && user.role == "admin")
 
     const visibleJobs = (jobsData?.data ?? []).filter(j =>
         statusFilter === 'all' ? true : statusFilter === 'active' ? j.is_active : !j.is_active
@@ -116,14 +120,18 @@ const JobsModule = () => {
 
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this job posting?')) return;
+    const confirmDelete = async () => {
+        if (!jobToDelete?._id) return;
         try {
-            await axiosDelete(`jobs/${id}`, true)
+            setIsDeleting(true)
+            await axiosDelete(`jobs/${jobToDelete._id}`, true)
             toast.success("Job deleted successfully")
+            setJobToDelete(null)
             refetchJobs()
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Failed to delete job")
+        } finally {
+            setIsDeleting(false)
         }
     };
 
@@ -307,6 +315,14 @@ const JobsModule = () => {
                 </Card>
             ) : (
               <>
+                {/* Stats */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard title="Total Jobs" value={jobStats?.total ?? 0} icon={<Briefcase className="w-5 h-5 text-blue-600" />} description="All postings" />
+                    <StatCard title="Active" value={jobStats?.active ?? 0} icon={<CheckCircle2 className="w-5 h-5 text-emerald-600" />} description="Open positions" />
+                    <StatCard title="Inactive" value={jobStats?.inactive ?? 0} icon={<X className="w-5 h-5 text-slate-500" />} description="Closed / hidden" />
+                    <StatCard title="Applicants" value={jobStats?.total_applicants ?? 0} icon={<Users className="w-5 h-5 text-indigo-600" />} description="Across all jobs" />
+                </div>
+
                 {/* Toolbar */}
                 <div className="flex flex-col lg:flex-row gap-3">
                     <div className="relative flex-1">
@@ -343,13 +359,21 @@ const JobsModule = () => {
                                             {job.salary_range && <span className="flex items-center gap-1"><Wallet className="w-3.5 h-3.5" /> {job.salary_range}</span>}
                                         </p>
                                         <p className="text-sm text-slate-600 line-clamp-2 max-w-2xl">{job.job_description}</p>
-                                        <button
-                                            onClick={() => setSelectedApplicantsJob(job as IJob)}
-                                            className="mt-3 inline-flex items-center gap-2 text-xs font-medium text-slate-600 hover:text-blue-600"
-                                        >
-                                            <Users className="w-3.5 h-3.5" />
-                                            <span>{job.application_count || 0} applicant{job.application_count === 1 ? '' : 's'}</span>
-                                        </button>
+                                        <div className="mt-3 flex items-center gap-2 flex-wrap">
+                                            <button
+                                                onClick={() => setSelectedApplicantsJob(job as IJob)}
+                                                className="inline-flex items-center gap-2 text-xs font-medium text-slate-600 hover:text-blue-600"
+                                            >
+                                                <Users className="w-3.5 h-3.5" />
+                                                <span>{job.application_count || 0} applicant{job.application_count === 1 ? '' : 's'}</span>
+                                            </button>
+                                            {!!job.applicant_stats?.shortlisted && (
+                                                <Badge variant="warning" className="gap-1"><Star className="w-3 h-3" /> {job.applicant_stats.shortlisted} shortlisted</Badge>
+                                            )}
+                                            {!!job.applicant_stats?.hired && (
+                                                <Badge variant="success" className="gap-1"><CheckCircle2 className="w-3 h-3" /> {job.applicant_stats.hired} hired</Badge>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-2 flex-wrap justify-end shrink-0">
                                         <Button
@@ -375,7 +399,7 @@ const JobsModule = () => {
                                         <Button variant="outline" size="sm" onClick={() => { setCurrentJob({ ...job, department: (job.department as Department)._id }); setIsEditing(true); }}>
                                             <Edit2 className="w-4 h-4" />
                                         </Button>
-                                        <Button variant="destructive" size="sm" onClick={() => handleDelete(job._id!)}>
+                                        <Button variant="destructive" size="sm" onClick={() => setJobToDelete(job as IJob)}>
                                             <Trash2 className="w-4 h-4" />
                                         </Button>
                                     </div>
@@ -544,6 +568,33 @@ const JobsModule = () => {
                                     />
                                 </Pagination>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete confirmation */}
+            {jobToDelete && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in duration-200" onClick={() => !isDeleting && setJobToDelete(null)}>
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-md animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-6">
+                            <div className="flex items-start gap-4">
+                                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                                    <AlertTriangle className="w-5 h-5 text-red-600" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900">Delete job posting?</h3>
+                                    <p className="text-sm text-slate-500 mt-1">
+                                        <span className="font-medium text-slate-700">{jobToDelete.job_title}</span> will be permanently removed. This can't be undone.
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex justify-end gap-2 mt-6">
+                                <Button variant="outline" onClick={() => setJobToDelete(null)} disabled={isDeleting}>Cancel</Button>
+                                <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting}>
+                                    {isDeleting ? "Deleting..." : "Delete Job"}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </div>

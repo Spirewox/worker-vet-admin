@@ -145,11 +145,14 @@ const admins = [
 
 const jobsRes = {
   data: [
-    { _id: "job-1", job_title: "Care Assistant", job_description: "Compassionate hands-on care.", department: departments[0], location: "Lagos", salary_range: "₦240k–₦280k", is_active: true, application_count: 14 },
-    { _id: "job-2", job_title: "Operations Coordinator", job_description: "Keep the floor running.", department: departments[1], location: "Abuja", salary_range: "₦300k–₦340k", is_active: true, application_count: 8 },
+    { _id: "job-1", job_title: "Care Assistant", job_description: "Compassionate hands-on care.", department: departments[0], location: "Lagos", salary_range: "₦240k - ₦280k", is_active: true, application_count: 14, applicant_stats: { shortlisted: 3, hired: 1 } },
+    { _id: "job-2", job_title: "Operations Coordinator", job_description: "Keep the floor running.", department: departments[1], location: "Abuja", salary_range: "₦300k - ₦340k", is_active: true, application_count: 8, applicant_stats: { shortlisted: 2, hired: 0 } },
+    { _id: "job-3", job_title: "Records Officer", job_description: "Manage confidential records.", department: departments[2], location: "Remote", salary_range: "₦200k - ₦240k", is_active: false, application_count: 5, applicant_stats: { shortlisted: 0, hired: 0 } },
   ],
-  meta: { filters: { department: null, search: null }, limit: 20, page: 1, total: 2, totalPages: 1 },
+  meta: { filters: { department: null, search: null }, limit: 20, page: 1, total: 3, totalPages: 1 },
 };
+
+const jobStats = { total: 18, active: 14, inactive: 4, total_applicants: 320 };
 
 const candidateSkills = {
   candidate_id: "u1", candidate_name: "Ada Obi", total_assessments: 3, pass_rate: 67, avg_score: 71,
@@ -262,6 +265,7 @@ const resolve = (config: InternalAxiosRequestConfig): unknown | undefined => {
   if (path === "users/admins") return admins;
   if (path.startsWith("users/candidates/recent-activity")) return candidatesRes;
 
+  if (path === "jobs/stats") return jobStats;
   if (path === "jobs") {
     const search = (params.get("search") || "").toLowerCase();
     const dept = params.get("department") || "";

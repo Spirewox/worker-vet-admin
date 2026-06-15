@@ -89,6 +89,27 @@ export const useJobs = (enabled : boolean, params ?: {page ?: number, limit ?: n
   });
 };
 
+export interface JobStats {
+  total: number;
+  active: number;
+  inactive: number;
+  total_applicants: number;
+}
+
+const fetchJobStats = async () => {
+  const response = await axiosGet(`jobs/stats`, true);
+  return response as JobStats;
+};
+
+export const useJobStats = (enabled: boolean) => {
+  return useQuery({
+    queryKey: ["job-stats"],
+    enabled,
+    queryFn: fetchJobStats,
+    retry: false,
+  });
+};
+
 export const useJobApplicants = (
   enabled: boolean,
   jobId?: string,
