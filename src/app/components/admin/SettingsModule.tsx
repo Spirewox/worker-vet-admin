@@ -2,7 +2,9 @@ import {useState, useEffect} from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Trash2, Eye, EyeOff, Wallet } from "lucide-react";
+import { Trash2, Eye, EyeOff, Wallet, SlidersHorizontal, UserCog, History } from "lucide-react";
+import AdminsModule from "./AdminsModule";
+import AuditModule from "./AuditModule";
 import { useDepartments, useSkills } from "../../hooks/useSettings";
 import { usePricing } from "../../hooks/usePricing";
 import { useAssessmentConfig } from "../../hooks/useAssessmentConfig";
@@ -13,6 +15,7 @@ import { useAuth } from "../../context/AuthContext";
 import { CURRENCY_SYMBOL } from "../../lib/format";
 
 const SettingsModule = () => {
+    const [tab, setTab] = useState<'general' | 'admins' | 'audit'>('general')
     const {data : departments,refetch : refetchDepartments, isLoading : departmentsLoading} = useDepartments()
     const {data : skills,refetch : refetchskills, isLoading : skillsLoading} = useSkills()
     const {data : pricing, refetch : refetchPricing} = usePricing()
@@ -182,12 +185,20 @@ const SettingsModule = () => {
     };
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             <div>
                 <h2 className="text-2xl font-bold tracking-tight text-slate-900">System Settings</h2>
-                <p className="text-slate-500 mt-1">Configure departments,skills and platform preferences.</p>
+                <p className="text-slate-500 mt-1">Configure departments, skills, admins and platform preferences.</p>
             </div>
 
+            <div className="flex gap-2 border-b border-slate-200 overflow-x-auto">
+                <SettingsTab active={tab === 'general'} onClick={() => setTab('general')} icon={<SlidersHorizontal className="w-4 h-4" />} label="General" />
+                <SettingsTab active={tab === 'admins'} onClick={() => setTab('admins')} icon={<UserCog className="w-4 h-4" />} label="Admins" />
+                <SettingsTab active={tab === 'audit'} onClick={() => setTab('audit')} icon={<History className="w-4 h-4" />} label="Audit Log" />
+            </div>
+
+            {tab === 'admins' ? <AdminsModule /> : tab === 'audit' ? <AuditModule /> : (
+            <div className="space-y-8">
             <Card>
                 <CardHeader>
                     <CardTitle>Departments</CardTitle>
@@ -401,11 +412,24 @@ const SettingsModule = () => {
                     </form>
                 </CardContent>
             </Card>
+            </div>
+            )}
         </div>
     );
 };
 
 export default SettingsModule
+
+const SettingsTab = ({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: React.ReactNode; label: string }) => (
+    <button
+        onClick={onClick}
+        className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px whitespace-nowrap ${
+            active ? "border-blue-600 text-blue-600" : "border-transparent text-slate-500 hover:text-slate-800"
+        }`}
+    >
+        {icon} {label}
+    </button>
+)
 
 export const EmptyState = ({ text }: { text: string }) => (
   <div className="flex items-center justify-center h-24 text-sm text-slate-500 border border-dashed rounded-lg">

@@ -13,12 +13,10 @@ import {
   Shield,
   Briefcase,
   LayoutGrid,
-  UserCog,
   Settings,
   GraduationCap,
   Award,
   Wallet,
-  History,
   Menu,
   X,
 } from 'lucide-react';
@@ -31,13 +29,11 @@ interface AdminDashboardProps {
 const NAV_ITEMS: { path: string; label: string; icon: React.ReactNode }[] = [
   { path: '/admin', label: 'Dashboard', icon: <LayoutGrid className="w-4 h-4" /> },
   { path: '/admin/users', label: 'Candidates', icon: <Users className="w-4 h-4" /> },
-  { path: '/admin/admins', label: 'Admins', icon: <UserCog className="w-4 h-4" /> },
   { path: '/admin/questions', label: 'Questions', icon: <FileText className="w-4 h-4" /> },
   { path: '/admin/jobs', label: 'Jobs', icon: <Briefcase className="w-4 h-4" /> },
   { path: '/admin/training', label: 'Training', icon: <GraduationCap className="w-4 h-4" /> },
   { path: '/admin/certificates', label: 'Certificates', icon: <Award className="w-4 h-4" /> },
   { path: '/admin/payments', label: 'Payments', icon: <Wallet className="w-4 h-4" /> },
-  { path: '/admin/audit', label: 'Audit', icon: <History className="w-4 h-4" /> },
   { path: '/admin/settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
 ];
 
