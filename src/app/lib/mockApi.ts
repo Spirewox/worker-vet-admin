@@ -139,6 +139,32 @@ const candidateSkills = {
   skills: globalSkills.map((s) => ({ skill_id: s.skill_id, skill_name: s.skill_name, percentage: s.average_percentage })),
 };
 
+const talents = [
+  {
+    _id: "u1", full_name: "Ada Obi", email: "ada@example.com", phone: "+234 801", cv: { filename: "ada.pdf", url: "#" },
+    certified_departments: [{ department_id: "dept-care", department_name: "Patient Care", score: 90, date: "2026-06-12T10:00:00Z" }],
+    avg_score: 88, pass_rate: 100, assessments_taken: 3, last_active: "2026-06-12T10:00:00Z", shortlisted: true,
+    top_skills: [{ skill_name: "Trust", percentage: 92 }, { skill_name: "Ethics", percentage: 90 }, { skill_name: "Communication", percentage: 88 }],
+  },
+  {
+    _id: "u2", full_name: "Chidi Umeh", email: "chidi@example.com", phone: "+234 802", cv: { filename: "chidi.pdf", url: "#" },
+    certified_departments: [{ department_id: "dept-ops", department_name: "Operations", score: 76, date: "2026-06-11T16:30:00Z" }],
+    avg_score: 74, pass_rate: 80, assessments_taken: 5, last_active: "2026-06-11T16:30:00Z", shortlisted: false,
+    top_skills: [{ skill_name: "Integrity", percentage: 82 }, { skill_name: "Professionalism", percentage: 78 }],
+  },
+  {
+    _id: "u3", full_name: "Ngozi Ali", email: "ngozi@example.com", phone: "+234 803", cv: { filename: "ngozi.pdf", url: "#" },
+    certified_departments: [
+      { department_id: "dept-care", department_name: "Patient Care", score: 84, date: "2026-06-08T10:00:00Z" },
+      { department_id: "dept-admin", department_name: "Administration", score: 79, date: "2026-05-30T10:00:00Z" },
+    ],
+    avg_score: 81, pass_rate: 90, assessments_taken: 4, last_active: "2026-06-08T10:00:00Z", shortlisted: false,
+    top_skills: [{ skill_name: "Communication", percentage: 86 }, { skill_name: "Trust", percentage: 83 }],
+  },
+];
+
+const talentStats = { total: talents.length, certified: 4, avg_score: 81, top_department: "Patient Care" };
+
 const assessmentHistory = [
   {
     date: "2026-06-12T10:00:00Z", job_name: "Care Assistant", department_name: "Patient Care", score: "9/10", percentage: 90, result: "pass",
@@ -183,6 +209,26 @@ const resolve = (config: InternalAxiosRequestConfig): unknown | undefined => {
     if (t) list = list.filter((x) => x.type === t);
     if (s) list = list.filter((x) => x.status === s);
     return { data: list };
+  }
+
+  if (path === "talent-pool/stats") return talentStats;
+  if (path === "talent-pool") {
+    const dept = params.get("department");
+    const skill = params.get("skill");
+    const minScore = Number(params.get("min_score") || 0);
+    const shortlisted = params.get("shortlisted") === "true";
+    const search = (params.get("search") || "").toLowerCase();
+    const sort = params.get("sort") || "avg_score";
+    let list = talents.slice();
+    if (dept) list = list.filter((t) => t.certified_departments.some((d) => d.department_id === dept));
+    if (skill) list = list.filter((t) => t.top_skills.some((s) => s.skill_name === skill));
+    if (minScore) list = list.filter((t) => t.avg_score >= minScore);
+    if (shortlisted) list = list.filter((t) => t.shortlisted);
+    if (search) list = list.filter((t) => t.full_name.toLowerCase().includes(search) || t.email.toLowerCase().includes(search));
+    if (sort === "pass_rate") list.sort((a, b) => b.pass_rate - a.pass_rate);
+    else if (sort === "recent") list.sort((a, b) => new Date(b.last_active).getTime() - new Date(a.last_active).getTime());
+    else list.sort((a, b) => b.avg_score - a.avg_score);
+    return { data: list, meta: { page: 1, limit: list.length, total: list.length, totalPages: 1 } };
   }
 
   if (path === "training") return { data: trainingCourses };

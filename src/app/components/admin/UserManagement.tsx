@@ -1,6 +1,6 @@
 import {Fragment, useEffect, useState} from "react"
 import { Input } from "../ui/input";
-import { BarChart, Briefcase, Calendar, ChevronDown, Mail, Search, Send, TrendingUp, Users, X } from "lucide-react";
+import { BarChart, Briefcase, Calendar, ChevronDown, Mail, Search, Send, Star, TrendingUp, Users, X } from "lucide-react";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { Skeleton } from "../ui/skeleton";
 import type { Department } from "../../interface/settings.interface";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../ui/pagination";
+import TalentPool from "./TalentPool";
 
 const UserManagementModule: React.FC = () => {
   const {user} = useAuth()
@@ -21,6 +22,7 @@ const UserManagementModule: React.FC = () => {
   const limit = 20
   const [selectedUser, setSelectedUser] = useState<CandidateAct >({} as CandidateAct);
   const [expandedHistory, setExpandedHistory] = useState<number | null>(null);
+  const [tab, setTab] = useState<'directory' | 'pool'>('directory');
   const {data : usersData} = useCandidates({
     enabled : !!user && user.role == "admin",
     search : debouncedSearch,
@@ -59,8 +61,22 @@ const UserManagementModule: React.FC = () => {
     window.location.href = `mailto:${selectedUser.email}?subject=${subject}&body=${body}`;
   };
 
+  if (tab === 'pool') {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">Candidate Management</h2>
+          <p className="text-slate-500 mt-1">Verified talent ready to be sourced and shortlisted.</p>
+        </div>
+        <SubTabs tab={tab} setTab={setTab} />
+        <TalentPool />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      <SubTabs tab={tab} setTab={setTab} />
       <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-slate-200 pb-6">
         <div>
            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Candidate Management</h2>
@@ -358,6 +374,25 @@ const UserManagementModule: React.FC = () => {
 
 
 export default UserManagementModule
+
+function SubTabs({ tab, setTab }: { tab: 'directory' | 'pool'; setTab: (t: 'directory' | 'pool') => void }) {
+  return (
+    <div className="flex gap-2 border-b border-slate-200">
+      <button
+        onClick={() => setTab('directory')}
+        className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px ${tab === 'directory' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+      >
+        <Users className="w-4 h-4" /> Directory
+      </button>
+      <button
+        onClick={() => setTab('pool')}
+        className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px ${tab === 'pool' ? 'border-blue-600 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+      >
+        <Star className="w-4 h-4" /> Talent Pool
+      </button>
+    </div>
+  );
+}
 
 
 function AssessmentRowSkeleton() {
