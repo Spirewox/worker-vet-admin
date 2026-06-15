@@ -9,6 +9,7 @@ import { Textarea } from "../ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useEffect, useState } from "react"
 import { useJobApplicants, useJobs } from "../../hooks/useJobs";
+import type { ApplicationStatus } from "../../hooks/useJobs";
 import { useAuth } from "../../context/AuthContext";
 import type { Department } from "../../interface/settings.interface";
 import { useDepartments } from "../../hooks/useSettings";
@@ -31,11 +32,22 @@ const JobsModule = () => {
     const [selectedApplicantsJob, setSelectedApplicantsJob] = useState<IJob | null>(null);
     const [applicantsPage, setApplicantsPage] = useState(1);
     const { data: jobsData, isLoading: jobsLoading, refetch: refetchJobs } = useJobs(!!user && user.role == "admin", { page, limit })
-    const { data: applicantsData, isLoading: applicantsLoading } = useJobApplicants(
+    const { data: applicantsData, isLoading: applicantsLoading, refetch: refetchApplicants } = useJobApplicants(
         !!selectedApplicantsJob?._id,
         selectedApplicantsJob?._id,
         { page: applicantsPage, limit: applicantLimit },
     )
+
+    const PIPELINE_STATUSES: ApplicationStatus[] = ["applied", "under_review", "shortlisted", "hired", "rejected"];
+    const handleUpdateApplicationStatus = async (applicationId: string, status: ApplicationStatus) => {
+        try {
+            await axiosPatch(`jobs/applications/${applicationId}/status`, { status }, true);
+            toast.success("Applicant status updated");
+            refetchApplicants();
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to update status");
+        }
+    };
     const totalPages = jobsData?.meta?.totalPages || 1;
     const applicantsTotalPages = applicantsData?.meta?.totalPages || 1;
 
@@ -403,6 +415,9 @@ const JobsModule = () => {
                                                     <Badge variant={application.is_certified ? 'success' : 'secondary'}>
                                                         {application.is_certified ? 'Certified' : 'Applied'}
                                                     </Badge>
+                                                    <Badge variant="outline" className="capitalize">
+                                                        {(application.status ?? 'applied').replace('_', ' ')}
+                                                    </Badge>
                                                 </div>
                                                 <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                                                     <div className="flex items-center gap-2 text-slate-600 min-w-0">
@@ -434,6 +449,19 @@ const JobsModule = () => {
                                             </div>
 
                                             <div className="flex items-center gap-2 shrink-0">
+                                                <Select
+                                                    value={application.status ?? 'applied'}
+                                                    onValueChange={(v) => handleUpdateApplicationStatus(application._id, v as ApplicationStatus)}
+                                                >
+                                                    <SelectTrigger className="w-40 capitalize">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {PIPELINE_STATUSES.map((s) => (
+                                                            <SelectItem key={s} value={s} className="capitalize">{s.replace('_', ' ')}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                                 <Button
                                                     onClick={() => handleInviteApplicant(application.applicant, selectedApplicantsJob.job_title)}
                                                     className="bg-indigo-600 hover:bg-indigo-700 text-white"

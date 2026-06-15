@@ -5,8 +5,9 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
 import { Skeleton } from "../ui/skeleton";
+import { NativeSelect } from "../ui/native-select";
 import { useAdmins } from "../../hooks/useCandidates";
-import type { AdminUser } from "../../hooks/useCandidates";
+import type { AdminUser, AdminRole } from "../../hooks/useCandidates";
 import { useAuth } from "../../context/AuthContext";
 import { axiosDelete, axiosPost } from "../../lib/api";
 import { toast } from "react-toastify";
@@ -20,7 +21,7 @@ const AdminsModule = () => {
   // Invite modal state
   const [showInvite, setShowInvite] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [form, setForm] = useState({ full_name: "", email: "" });
+  const [form, setForm] = useState<{ full_name: string; email: string; role: AdminRole }>({ full_name: "", email: "", role: "admin" });
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +29,7 @@ const AdminsModule = () => {
       setIsSubmitting(true);
       await axiosPost("users/admin", form, true);
       toast.success(`Invite sent to ${form.email}. A temporary password has been emailed to them.`);
-      setForm({ full_name: "", email: "" });
+      setForm({ full_name: "", email: "", role: "admin" });
       setShowInvite(false);
       queryClient.invalidateQueries({ queryKey: ["admins"] });
     } catch (error) {
@@ -162,6 +163,19 @@ const AdminsModule = () => {
                 />
               </div>
 
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-slate-700">Role</label>
+                <NativeSelect
+                  value={form.role}
+                  onChange={(e) => setForm((prev) => ({ ...prev, role: e.target.value as AdminRole }))}
+                >
+                  <option value="super_admin">Super Admin — full access</option>
+                  <option value="admin">Admin — manage everything</option>
+                  <option value="editor">Editor — content only</option>
+                  <option value="viewer">Viewer — read only</option>
+                </NativeSelect>
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <Button
                   type="button"
@@ -220,6 +234,14 @@ const AdminCard = ({
               You
             </Badge>
           )}
+        </div>
+        <div className="flex items-center gap-1.5 mt-1">
+          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 capitalize">
+            {(admin.role ?? "admin").replace("_", " ")}
+          </Badge>
+          <Badge variant={admin.status === "inactive" ? "outline" : "success"} className="text-[10px] px-1.5 py-0 capitalize">
+            {admin.status ?? "active"}
+          </Badge>
         </div>
         <p className="text-xs text-slate-500 truncate flex items-center gap-1 mt-0.5">
           <Mail className="w-3 h-3 shrink-0" /> {admin.email}

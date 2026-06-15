@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { Trash2, Eye, EyeOff, Wallet } from "lucide-react";
 import { useDepartments, useSkills } from "../../hooks/useSettings";
 import { usePricing } from "../../hooks/usePricing";
+import { useAssessmentConfig } from "../../hooks/useAssessmentConfig";
 import type { Department, Skill } from "../../interface/settings.interface";
 import { toast } from "react-toastify";
 import { axiosDelete, axiosPatch, axiosPost } from "../../lib/api";
@@ -39,6 +40,34 @@ const SettingsModule = () => {
             toast.error(error instanceof Error ? error.message : "Failed to update pricing");
         } finally {
             setIsSubmittingPricing(false);
+        }
+    };
+
+    // Assessment configuration
+    const {data : assessmentConfig, refetch : refetchAssessmentConfig} = useAssessmentConfig()
+    const [configForm, setConfigForm] = useState({ pass_mark: 70, time_limit: 600, max_attempts: 3, retake_cooldown_hours: 24, validity_days: 365 });
+    const [isSubmittingConfig, setIsSubmittingConfig] = useState(false);
+    useEffect(() => {
+        if (assessmentConfig) setConfigForm({
+            pass_mark: assessmentConfig.pass_mark ?? 70,
+            time_limit: assessmentConfig.time_limit ?? 600,
+            max_attempts: assessmentConfig.max_attempts ?? 3,
+            retake_cooldown_hours: assessmentConfig.retake_cooldown_hours ?? 24,
+            validity_days: assessmentConfig.validity_days ?? 365,
+        });
+    }, [assessmentConfig]);
+
+    const handleSaveConfig = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            setIsSubmittingConfig(true);
+            await axiosPatch('settings/assessment-config', configForm, true);
+            toast.success("Assessment configuration updated");
+            refetchAssessmentConfig();
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to update configuration");
+        } finally {
+            setIsSubmittingConfig(false);
         }
     };
     const [newDept, setNewDept] = useState('');
@@ -265,6 +294,45 @@ const SettingsModule = () => {
                             </div>
                         </div>
                         <Button type="submit" disabled={isSubmittingPricing}>{isSubmittingPricing ? "Saving..." : "Save Pricing"}</Button>
+                    </form>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Assessment Rules</CardTitle>
+                    <CardDescription>Pass mark, time limit, and retake policy applied to candidate assessments.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <form onSubmit={handleSaveConfig} className="space-y-4">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Pass mark (%)</label>
+                                <Input type="number" min="0" max="100" value={configForm.pass_mark}
+                                    onChange={e => setConfigForm(p => ({ ...p, pass_mark: Number(e.target.value) }))} className="mt-1" />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Time limit (sec)</label>
+                                <Input type="number" min="0" value={configForm.time_limit}
+                                    onChange={e => setConfigForm(p => ({ ...p, time_limit: Number(e.target.value) }))} className="mt-1" />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Max attempts</label>
+                                <Input type="number" min="1" value={configForm.max_attempts}
+                                    onChange={e => setConfigForm(p => ({ ...p, max_attempts: Number(e.target.value) }))} className="mt-1" />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Retake cooldown (hrs)</label>
+                                <Input type="number" min="0" value={configForm.retake_cooldown_hours}
+                                    onChange={e => setConfigForm(p => ({ ...p, retake_cooldown_hours: Number(e.target.value) }))} className="mt-1" />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Cert validity (days)</label>
+                                <Input type="number" min="0" value={configForm.validity_days}
+                                    onChange={e => setConfigForm(p => ({ ...p, validity_days: Number(e.target.value) }))} className="mt-1" />
+                            </div>
+                        </div>
+                        <Button type="submit" disabled={isSubmittingConfig}>{isSubmittingConfig ? "Saving..." : "Save Rules"}</Button>
                     </form>
                 </CardContent>
             </Card>

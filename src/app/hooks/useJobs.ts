@@ -14,9 +14,17 @@ export interface JobRes{
   }
 }
 
+export type ApplicationStatus =
+  | "applied"
+  | "under_review"
+  | "shortlisted"
+  | "hired"
+  | "rejected";
+
 export interface JobApplicant {
   _id: string;
   is_certified: boolean;
+  status?: ApplicationStatus;
   createdAt: Date;
   applicant: {
     _id: string;

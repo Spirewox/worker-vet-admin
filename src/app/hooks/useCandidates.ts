@@ -159,10 +159,13 @@ export const useDepartmentsPassRate= (enabled : boolean) => {
   });
 };
 
+export type AdminRole = 'super_admin' | 'admin' | 'editor' | 'viewer';
+
 export interface AdminUser {
   _id: string;
   full_name: string;
   email: string;
+  role?: AdminRole;
   status: 'active' | 'inactive';
   createdAt: string;
 }

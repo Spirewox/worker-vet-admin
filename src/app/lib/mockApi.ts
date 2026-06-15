@@ -111,6 +111,8 @@ const auditEntries = [
 
 const pricing = { training_price: 500, certificate_price: 50, hardcopy_fee: 20 };
 
+const assessmentConfig = { pass_mark: 70, time_limit: 600, max_attempts: 3, retake_cooldown_hours: 24, validity_days: 365 };
+
 const candidatesRes = {
   data: [
     { _id: "u1", full_name: "Ada Obi", email: "ada@example.com", phone: "+234 801", target_department: "Patient Care", cv: { filename: "ada.pdf", url: "#" }, recent_activity: { department_name: "Patient Care", result: "pass", submitted_at: "2026-06-12T10:00:00Z" } },
@@ -120,7 +122,8 @@ const candidatesRes = {
 };
 
 const admins = [
-  { _id: "admin-1", full_name: "Admin User", email: "admin@workervet.com", status: "active", createdAt: "2026-01-10T00:00:00Z" },
+  { _id: "admin-1", full_name: "Admin User", email: "admin@workervet.com", role: "super_admin", status: "active", createdAt: "2026-01-10T00:00:00Z" },
+  { _id: "admin-2", full_name: "Tunde Bako", email: "tunde@workervet.com", role: "editor", status: "active", createdAt: "2026-03-02T00:00:00Z" },
 ];
 
 const jobsRes = {
@@ -171,6 +174,7 @@ const resolve = (config: InternalAxiosRequestConfig): unknown | undefined => {
   if (path === "certificates/hardcopy-orders") return { data: hardcopyOrders };
   if (path === "audit-logs") return { data: auditEntries };
   if (path === "settings/pricing") return pricing;
+  if (path === "settings/assessment-config") return assessmentConfig;
 
   if (path === "departments") return departments;
   if (path === "skills") return skills;
@@ -179,7 +183,13 @@ const resolve = (config: InternalAxiosRequestConfig): unknown | undefined => {
 
   if (path === "jobs") return jobsRes;
   if (/^jobs\/[^/]+\/applicants$/.test(path)) {
-    return { data: [], meta: { page: 1, limit: 20, total: 0, totalPages: 1, search: null, job: { _id: "job-1", job_title: "Care Assistant" } } };
+    return {
+      data: [
+        { _id: "ap1", is_certified: true, status: "shortlisted", createdAt: "2026-06-10T10:00:00Z", applicant: { _id: "u1", full_name: "Ada Obi", email: "ada@example.com", phone: "+234 801", cv: { filename: "ada.pdf", url: "#" }, target_department: departments[0] } },
+        { _id: "ap2", is_certified: false, status: "applied", createdAt: "2026-06-11T10:00:00Z", applicant: { _id: "u4", full_name: "Femi Cole", email: "femi@example.com", phone: "+234 803", cv: { filename: "femi.pdf", url: "#" }, target_department: departments[0] } },
+      ],
+      meta: { page: 1, limit: 20, total: 2, totalPages: 1, search: null, job: { _id: "job-1", job_title: "Care Assistant" } },
+    };
   }
 
   return undefined;
