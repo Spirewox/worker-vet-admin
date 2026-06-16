@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -13,15 +13,20 @@ export const AdminLogin: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+  const locationState = location.state as { from?: string } | null;
+  const redirectTo = locationState?.from?.startsWith('/admin') && locationState.from !== '/admin/login'
+    ? locationState.from
+    : '/admin';
 
   const handleLogin = async (e: React.FormEvent) => {
     try {
       e.preventDefault();
       setLoading(true);
-      const result = await axiosPost('auth/admin/login',{email, password}, true)
-      login(result.user);
-      navigate('/admin');
+      await axiosPost('auth/admin/login',{email, password}, true)
+      await login();
+      navigate(redirectTo, { replace: true });
     } catch (error) {
       if (error instanceof Error)
       setError(error.message);

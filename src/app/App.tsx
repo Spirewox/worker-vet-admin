@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate} from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation} from 'react-router-dom';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AdminLogin } from './components/AdminLogin';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -30,6 +30,7 @@ import AdminsModule from './components/admin/AdminsModule';
 // Admin Protected Route
 const AdminRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   const { user,loading } = useAuth();
+  const location = useLocation();
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -37,8 +38,8 @@ const AdminRoute: React.FC<{ children: React.ReactElement }> = ({ children }) =>
       </div>
     );
   }
-  if (!user || user.role !== 'admin') {
-    return <Navigate to="/admin/login" replace />;
+  if (user?.role !== 'admin') {
+    return <Navigate to="/admin/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
   }
 
   return children;

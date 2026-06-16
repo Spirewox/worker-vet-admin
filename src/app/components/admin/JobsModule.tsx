@@ -17,10 +17,18 @@ import { Skeleton } from "../ui/skeleton";
 import { axiosDelete, axiosPatch, axiosPost } from "../../lib/api";
 import { toast } from "react-toastify";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../ui/pagination";
+import { useSearchParams } from "react-router-dom";
+
+const getDepartmentId = (department?: string | Department) => {
+    if (!department) return '';
+    return typeof department === 'string' ? department : department._id;
+};
 
 const JobsModule = () => {
     const frontendJobsBaseUrl = "https://worker-vet.fudfarmerintelligence.com/jobs";
     const { user } = useAuth()
+    const [searchParams, setSearchParams] = useSearchParams();
+    const editingJobId = searchParams.get('edit');
     const [page, setPage] = useState(1)
     const limit = 20
     const applicantLimit = 10
@@ -30,7 +38,7 @@ const JobsModule = () => {
     const [currentJob, setCurrentJob] = useState<Partial<IJob>>({});
     const [selectedApplicantsJob, setSelectedApplicantsJob] = useState<IJob | null>(null);
     const [applicantsPage, setApplicantsPage] = useState(1);
-    const { data: jobsData, isLoading: jobsLoading, refetch: refetchJobs } = useJobs(!!user && user.role == "admin", { page, limit })
+    const { data: jobsData, isLoading: jobsLoading, refetch: refetchJobs } = useJobs(!!user && user.role == "admin", { page, limit, job: editingJobId || undefined })
     const { data: applicantsData, isLoading: applicantsLoading } = useJobApplicants(
         !!selectedApplicantsJob?._id,
         selectedApplicantsJob?._id,
@@ -59,6 +67,46 @@ const JobsModule = () => {
         setApplicantsPage(1)
     }, [selectedApplicantsJob?._id])
 
+    useEffect(() => {
+        if (!editingJobId || (isEditing && currentJob._id === editingJobId)) return;
+
+        const jobToEdit = jobsData?.data?.find(job => job._id === editingJobId);
+        if (!jobToEdit) return;
+
+        setCurrentJob({
+            ...jobToEdit,
+            department: getDepartmentId(jobToEdit.department),
+        });
+        setIsEditing(true);
+    }, [currentJob._id, editingJobId, isEditing, jobsData?.data])
+
+    const setEditJobId = (jobId?: string, options?: { replace?: boolean }) => {
+        const nextParams = new URLSearchParams(searchParams);
+
+        if (jobId) {
+            nextParams.set('edit', jobId);
+        } else {
+            nextParams.delete('edit');
+        }
+
+        setSearchParams(nextParams, { replace: options?.replace });
+    };
+
+    const openJobEditor = (job: IJob) => {
+        if (job._id) setEditJobId(job._id);
+        setCurrentJob({
+            ...job,
+            department: getDepartmentId(job.department),
+        });
+        setIsEditing(true);
+    };
+
+    const closeJobEditor = () => {
+        setEditJobId(undefined, { replace: true });
+        setIsEditing(false);
+        setCurrentJob({});
+    };
+
     const rangeRegex = /^\d*\s?-?\s?\d*$/;
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -73,8 +121,7 @@ const JobsModule = () => {
                 toast.success("Job posted successfully")
             }
             refetchJobs()
-            setIsEditing(false);
-            setCurrentJob({});
+            closeJobEditor();
         } catch (error) {
             console.log(error)
             if (error instanceof Error)
@@ -183,7 +230,7 @@ const JobsModule = () => {
                     <h2 className="text-2xl font-bold tracking-tight text-slate-900">Job Board Management</h2>
                     <p className="text-slate-500 mt-1">Create and manage job listings.</p>
                 </div>
-                <Button onClick={() => { setCurrentJob({}); setIsEditing(true); }}>
+                <Button onClick={() => { setEditJobId(undefined, { replace: true }); setCurrentJob({}); setIsEditing(true); }}>
                     <Plus className="w-4 h-4 mr-2" /> Post New Job
                 </Button>
             </div>
@@ -207,7 +254,7 @@ const JobsModule = () => {
                                 <div className="space-y-2">
                                     <Label>Department</Label>
                                     <Select
-                                        value={String(currentJob?.department) || ''}
+                                        value={getDepartmentId(currentJob.department)}
                                         onValueChange={val => setCurrentJob({ ...currentJob, department: val })}
                                         required
                                     >
@@ -272,7 +319,7 @@ const JobsModule = () => {
                             </div>
 
                             <div className="flex justify-end gap-2 pt-4">
-                                <Button type="button" variant="outline" onClick={() => setIsEditing(false)} disabled={isSubmitting}>Cancel</Button>
+                                <Button type="button" variant="outline" onClick={closeJobEditor} disabled={isSubmitting}>Cancel</Button>
                                 <Button type="submit" disabled={isSubmitting}>Save Job Posting</Button>
                             </div>
                         </form>
@@ -319,7 +366,7 @@ const JobsModule = () => {
                                         >
                                             <Copy className="w-4 h-4" />
                                         </Button>
-                                        <Button variant="outline" size="sm" onClick={() => { setCurrentJob({ ...job, department: (job.department as Department)._id }); setIsEditing(true); }}>
+                                        <Button variant="outline" size="sm" onClick={() => openJobEditor(job as IJob)}>
                                             <Edit2 className="w-4 h-4" />
                                         </Button>
                                         <Button variant="destructive" size="sm" onClick={() => handleDelete(job._id!)}>

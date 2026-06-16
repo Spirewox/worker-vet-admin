@@ -7,7 +7,7 @@ import { axiosPost } from '../lib/api';
 
 export interface AuthContextType {
   user: IUser | null;
-  login: (user: IUser) => Promise<void>;
+  login: () => Promise<void>;
   logout: () => Promise<void>;
   loading: boolean;
   error: boolean;
@@ -50,7 +50,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const login = async () => {
     await refetch();
-    navigate("/admin");
   };
 
   const logout = async () => {
@@ -58,7 +57,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     navigate("/admin/login");
   };
 
-  const loading = isLoading || isRefetching;
+  const loading = isLoading;
 
   return (
     <AuthContext.Provider
