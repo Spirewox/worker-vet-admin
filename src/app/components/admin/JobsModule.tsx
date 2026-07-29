@@ -320,7 +320,7 @@ const JobsModule = () => {
                     <StatCard title="Total Jobs" value={jobStats?.total ?? 0} icon={<Briefcase className="w-5 h-5 text-blue-600" />} description="All postings" />
                     <StatCard title="Active" value={jobStats?.active ?? 0} icon={<CheckCircle2 className="w-5 h-5 text-emerald-600" />} description="Open positions" />
                     <StatCard title="Inactive" value={jobStats?.inactive ?? 0} icon={<X className="w-5 h-5 text-slate-500" />} description="Closed / hidden" />
-                    <StatCard title="Applicants" value={jobStats?.total_applicants ?? 0} icon={<Users className="w-5 h-5 text-indigo-600" />} description="Across all jobs" />
+                    <StatCard title="Applicants" value={jobStats?.total_applicants ?? 0} icon={<Users className="w-5 h-5 text-blue-600" />} description="Across all jobs" />
                 </div>
 
                 {/* Toolbar */}
@@ -534,7 +534,7 @@ const JobsModule = () => {
                                                 </Select>
                                                 <Button
                                                     onClick={() => handleInviteApplicant(application.applicant, selectedApplicantsJob.job_title)}
-                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                                                    className="bg-blue-600 hover:bg-blue-700 text-white"
                                                 >
                                                     <Send className="w-4 h-4 mr-2" /> Invite Candidate
                                                 </Button>

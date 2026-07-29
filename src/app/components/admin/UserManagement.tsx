@@ -159,7 +159,7 @@ const UserManagementModule: React.FC = () => {
                 
                 <Button 
                     variant="outline" 
-                    className="w-full text-indigo-600 border-indigo-100 hover:bg-indigo-50"
+                    className="w-full text-blue-600 border-blue-100 hover:bg-blue-50"
                     onClick={() => setSelectedUser(()=> user)}
                 >
                     <BarChart className="w-4 h-4 mr-2" /> View Performance
@@ -235,7 +235,7 @@ const UserManagementModule: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button onClick={handleInvite} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                      <Button onClick={handleInvite} className="bg-blue-600 hover:bg-blue-700 text-white">
                           <Send className="w-4 h-4 mr-2" /> Invite to Interview
                       </Button>
                       <Button variant="ghost" size="icon" onClick={() => setSelectedUser(() => ({} as CandidateAct))}>

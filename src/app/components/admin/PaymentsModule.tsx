@@ -13,7 +13,7 @@ import { formatNaira, formatDateTime } from "../../lib/format";
 import { downloadCsv } from "../../lib/export";
 
 const TYPE_BADGE: Record<Transaction["type"], { label: string; className: string }> = {
-  training: { label: "Training", className: "bg-indigo-50 text-indigo-700" },
+  training: { label: "Training", className: "bg-blue-50 text-blue-700" },
   certificate: { label: "Certificate", className: "bg-amber-50 text-amber-700" },
   hardcopy: { label: "Hard copy", className: "bg-slate-100 text-slate-600" },
 };
@@ -61,7 +61,7 @@ const PaymentsModule = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard title="Total Revenue" value={formatNaira(summary?.total)} icon={<Wallet className="w-5 h-5 text-emerald-600" />} description="All time" trend={summary?.totalMoM != null ? `+${summary.totalMoM}% MoM` : undefined} trendUp />
-        <StatCard title="Training" value={formatNaira(summary?.training)} icon={<GraduationCap className="w-5 h-5 text-indigo-600" />} description="Course sales" />
+        <StatCard title="Training" value={formatNaira(summary?.training)} icon={<GraduationCap className="w-5 h-5 text-blue-600" />} description="Course sales" />
         <StatCard title="Certificates" value={formatNaira(summary?.certificate)} icon={<Award className="w-5 h-5 text-amber-600" />} description="Issued credentials" />
         <StatCard title="Hard copies" value={formatNaira(summary?.hardcopy)} icon={<Printer className="w-5 h-5 text-slate-600" />} description="Shipped certificates" />
       </div>

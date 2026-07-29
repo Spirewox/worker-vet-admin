@@ -265,7 +265,7 @@ const TalentCard = ({ talent: t, matchDept, onView, onStar, onInvite }: {
             <FileText className="w-4 h-4" />
           </a>
         )}
-        <Button size="sm" className="flex-1 bg-indigo-600 hover:bg-indigo-700" onClick={onInvite}><Mail className="w-3.5 h-3.5 mr-1.5" /> Invite</Button>
+        <Button size="sm" className="flex-1 bg-blue-600 hover:bg-blue-700" onClick={onInvite}><Mail className="w-3.5 h-3.5 mr-1.5" /> Invite</Button>
       </div>
     </div>
   );

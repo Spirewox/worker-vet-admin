@@ -50,53 +50,63 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   };
 
   const SidebarBody = (
-    <div className="flex flex-col h-full bg-slate-950 text-slate-50 w-64">
+    <div className="flex flex-col h-full bg-white border-r border-slate-200 w-64">
       {/* Brand */}
-      <div className="h-16 flex items-center justify-between px-5 border-b border-slate-800/80 shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="bg-blue-600 p-1.5 rounded-md shadow-lg shadow-blue-900/50">
-            <Shield className="w-5 h-5 text-white" />
-          </div>
-          <span className="font-bold text-lg tracking-tight">
-            Workervet<span className="text-slate-500 font-normal">Admin</span>
-          </span>
+      <div className="h-16 flex items-center gap-2.5 px-5 border-b border-slate-100 shrink-0">
+        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+          <Shield className="w-4.5 h-4.5 text-white" />
+        </div>
+        <div className="leading-tight">
+          <p className="font-bold text-slate-900 tracking-tight">Workervet</p>
+          <p className="text-[11px] text-slate-400 -mt-0.5">Admin</p>
         </div>
         <button
           onClick={() => setMobileOpen(false)}
-          className="md:hidden text-slate-400 hover:text-white"
+          className="md:hidden ml-auto text-slate-400 hover:text-slate-700"
         >
           <X className="w-5 h-5" />
         </button>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
-        {NAV_ITEMS.map((item) => (
-          <button
-            key={item.path}
-            onClick={() => go(item.path)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all duration-200 border border-transparent ${
-              isActive(item.path)
-                ? 'bg-blue-600 text-white shadow-sm border-blue-500/20'
-                : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
-            }`}
-          >
-            <span className="opacity-80">{item.icon}</span>
-            {item.label}
-          </button>
-        ))}
+      <nav className="flex-1 overflow-y-auto p-3">
+        <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">Menu</p>
+        <div className="space-y-1">
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.path}
+              onClick={() => go(item.path)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                isActive(item.path)
+                  ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/20'
+                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+              }`}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
+        </div>
       </nav>
 
       {/* Footer */}
-      <div className="p-3 border-t border-slate-800/80 shrink-0">
-        <div className="px-3 pb-2 text-xs text-slate-500">Administrator</div>
+      <div className="p-3 border-t border-slate-100 shrink-0">
+        <div className="flex items-center gap-3 px-2 py-1.5">
+          <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center font-semibold text-sm shrink-0">
+            AD
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-slate-900 truncate">Administrator</p>
+            <p className="text-[11px] text-slate-400 truncate">Full access</p>
+          </div>
+        </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={onLogout}
-          className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800"
+          className="w-full justify-start text-slate-500 hover:text-slate-900 mt-1"
         >
-          <LogOut className="w-4 h-4 mr-2" /> Logout
+          <LogOut className="w-4 h-4" /> Logout
         </Button>
       </div>
     </div>
@@ -122,17 +132,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
       {/* Main column */}
       <div className="md:pl-64 min-w-0">
         {/* Mobile top bar */}
-        <header className="md:hidden h-14 bg-slate-950 text-slate-50 flex items-center justify-between px-4 sticky top-0 z-20 shadow-md">
-          <button onClick={() => setMobileOpen(true)} className="text-slate-300 hover:text-white">
+        <header className="md:hidden h-14 bg-white/80 backdrop-blur-xl border-b border-slate-200 text-slate-900 flex items-center justify-between px-4 sticky top-0 z-20">
+          <button onClick={() => setMobileOpen(true)} className="text-slate-500 hover:text-slate-900">
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="bg-blue-600 p-1 rounded">
+            <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
               <Shield className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold tracking-tight">Workervet<span className="text-slate-500 font-normal">Admin</span></span>
+            <span className="font-bold tracking-tight text-slate-900">Workervet<span className="text-slate-400 font-normal"> Admin</span></span>
           </div>
-          <button onClick={onLogout} className="text-slate-300 hover:text-white">
+          <button onClick={onLogout} className="text-slate-500 hover:text-slate-900">
             <LogOut className="w-5 h-5" />
           </button>
         </header>
@@ -159,19 +169,17 @@ export const StatCard: React.FC<{
 }> = ({ title, value, icon, description, trend, trendUp }) => (
   <Card>
     <CardContent className="p-6">
-      <div className="flex justify-between items-start">
-        <div>
-           <p className="text-sm font-medium text-slate-500">{title}</p>
-           <h3 className="text-2xl font-bold text-slate-900 mt-1">{value}</h3>
-        </div>
-        <div className="p-2 bg-slate-100 rounded-lg">
+      <div className="flex justify-between items-start gap-3">
+        <p className="text-sm font-medium text-slate-500">{title}</p>
+        <div className="w-9 h-9 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center shrink-0">
            {icon}
         </div>
       </div>
-      <div className="mt-4 flex items-center justify-between">
+      <h3 className="text-2xl font-bold text-slate-900 mt-3 tracking-tight">{value}</h3>
+      <div className="mt-2 flex items-center justify-between gap-2 flex-wrap">
          {description && <p className="text-xs text-slate-400">{description}</p>}
          {trend && (
-           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${trendUp ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
+           <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${trendUp ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
              {trend}
            </span>
          )}

@@ -55,7 +55,7 @@ const DashboardOverviewModule: React.FC = () => {
       {/* Revenue KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard title="Total Revenue" value={formatNaira(revenue?.total)} icon={<Wallet className="w-5 h-5 text-emerald-600" />} description="All paid actions" trend={revenue?.totalMoM != null ? `+${revenue.totalMoM}% this month` : undefined} trendUp />
-        <StatCard title="Training Sales" value={formatNaira(revenue?.training)} icon={<GraduationCap className="w-5 h-5 text-indigo-600" />} description="Course purchases" />
+        <StatCard title="Training Sales" value={formatNaira(revenue?.training)} icon={<GraduationCap className="w-5 h-5 text-blue-600" />} description="Course purchases" />
         <StatCard title="Certificate Sales" value={formatNaira(revenue?.certificate)} icon={<Award className="w-5 h-5 text-amber-600" />} description="Issued credentials" />
         <StatCard title="Hard-copy Fees" value={formatNaira(revenue?.hardcopy)} icon={<Printer className="w-5 h-5 text-slate-600" />} description="Shipped certificates" />
       </div>
@@ -177,7 +177,7 @@ const DashboardOverviewModule: React.FC = () => {
                         <span className="text-slate-500">{s.count.toLocaleString()} {i > 0 && <span className="text-slate-400">· {conv}% of prev</span>}</span>
                       </div>
                       <div className="h-7 w-full bg-slate-100 rounded-md overflow-hidden">
-                        <div className="h-full rounded-md bg-gradient-to-r from-blue-600 to-indigo-500 flex items-center justify-end pr-2 text-[10px] font-semibold text-white" style={{ width: `${Math.max(pct, 6)}%` }}>{pct}%</div>
+                        <div className="h-full rounded-md bg-gradient-to-r from-blue-600 to-blue-500 flex items-center justify-end pr-2 text-[10px] font-semibold text-white" style={{ width: `${Math.max(pct, 6)}%` }}>{pct}%</div>
                       </div>
                     </div>
                   );
