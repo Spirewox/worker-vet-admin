@@ -28,6 +28,20 @@ const skills = [
   { _id: "sk-prof", skill_name: "Professionalism", is_active: true },
 ];
 
+// Question bank keyed by department id.
+const questionsByDept: Record<string, Array<Record<string, unknown>>> = {
+  "dept-care": [
+    { _id: "q-care-1", skill_category: "sk-trust", department: "dept-care", scenario: "A resident asks you not to tell their family about a fall.", question_text: "What is the most appropriate first action?", time_seconds: 30, options: [{ _id: "o1", content: "Agree and keep it private" }, { _id: "o2", content: "Log the incident and follow safeguarding policy" }], correct_option_index: 1 },
+    { _id: "q-care-2", skill_category: "sk-comm", department: "dept-care", question_text: "A colleague hands over a task without clear instructions. You should:", time_seconds: 25, options: [{ _id: "o1", content: "Guess and proceed" }, { _id: "o2", content: "Ask clarifying questions first" }], correct_option_index: 1 },
+  ],
+  "dept-ops": [
+    { _id: "q-ops-1", skill_category: "sk-integrity", department: "dept-ops", question_text: "You notice a supplier invoice has been double-counted. You:", time_seconds: 30, options: [{ _id: "o1", content: "Leave it" }, { _id: "o2", content: "Flag it to finance and correct the record" }], correct_option_index: 1 },
+  ],
+  "dept-admin": [
+    { _id: "q-admin-1", skill_category: "sk-ethics", department: "dept-admin", question_text: "A visitor asks for another person's records. You:", time_seconds: 20, options: [{ _id: "o1", content: "Share them to help" }, { _id: "o2", content: "Verify authorisation before disclosing" }], correct_option_index: 1 },
+  ],
+};
+
 const dashboardMetrics = {
   totalCandidates: 1240, totalCandidatesMoM: 12, assessmentsTaken: 3180,
   assessmentsPassed: 8, passRateMoM: -3, avgPassRate: 64, activeJobsCount: 18,
@@ -262,6 +276,23 @@ const resolve = (config: InternalAxiosRequestConfig): unknown | undefined => {
 
   if (path === "departments") return departments;
   if (path === "skills") return skills;
+
+  if (path === "departments/by-questions")
+    return departments.map((d) => ({
+      department_id: d._id,
+      department_name: d.department_name,
+      question_count: (questionsByDept[d._id] ?? []).length,
+    }));
+  const deptQ = path.match(/^questions\/department\/(.+)$/);
+  if (deptQ) {
+    const id = decodeURIComponent(deptQ[1]);
+    const dept = departments.find((d) => d._id === id);
+    return {
+      department_id: id,
+      department_name: dept?.department_name ?? "",
+      questions: questionsByDept[id] ?? [],
+    };
+  }
   if (path === "users/admins") return admins;
   if (path.startsWith("users/candidates/recent-activity")) return candidatesRes;
 
