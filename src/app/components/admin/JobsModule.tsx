@@ -345,28 +345,41 @@ const JobsModule = () => {
                     {
                         jobsLoading ? <JobCardSkeleton /> :
                             visibleJobs.map(job => (
-                                <div key={job._id} className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:justify-between lg:items-start group hover:border-blue-300 hover:shadow transition-all gap-4">
-                                    <div>
-                                        <div className="flex items-center gap-3 mb-1">
-                                            <h3 className="font-bold text-lg text-slate-900">{job.job_title}</h3>
-                                            <Badge variant={job.is_active ? 'success' : 'secondary'} className="text-[10px]">
-                                                {job.is_active ? 'ACTIVE' : 'INACTIVE'}
-                                            </Badge>
+                                <div key={job._id} className="bg-white p-5 rounded-lg border border-slate-200 shadow-sm hover:border-blue-300 hover:shadow transition-all">
+                                    {/* Header: title + status toggle */}
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <h3 className="font-bold text-lg text-slate-900 leading-tight">{job.job_title}</h3>
+                                                <Badge variant={job.is_active ? 'success' : 'secondary'} className="text-[10px]">
+                                                    {job.is_active ? 'ACTIVE' : 'INACTIVE'}
+                                                </Badge>
+                                            </div>
+                                            <div className="mt-1.5 flex items-center flex-wrap gap-x-3 gap-y-1 text-sm text-slate-500">
+                                                <span>{(job?.department as Department)?.department_name}</span>
+                                                <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {job.location}</span>
+                                                {job.salary_range && <span className="flex items-center gap-1"><Wallet className="w-3.5 h-3.5" /> {job.salary_range}</span>}
+                                            </div>
                                         </div>
-                                        <p className="text-sm text-slate-500 mb-3 flex items-center flex-wrap gap-x-3 gap-y-1">
-                                            <span>{(job?.department as Department)?.department_name}</span>
-                                            <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {job.location}</span>
-                                            {job.salary_range && <span className="flex items-center gap-1"><Wallet className="w-3.5 h-3.5" /> {job.salary_range}</span>}
-                                        </p>
-                                        <p className="text-sm text-slate-600 line-clamp-2 max-w-2xl">{job.job_description}</p>
-                                        <div className="mt-3 flex items-center gap-2 flex-wrap">
-                                            <button
-                                                onClick={() => setSelectedApplicantsJob(job as IJob)}
-                                                className="inline-flex items-center gap-2 text-xs font-medium text-slate-600 hover:text-blue-600"
-                                            >
-                                                <Users className="w-3.5 h-3.5" />
-                                                <span>{job.application_count || 0} applicant{job.application_count === 1 ? '' : 's'}</span>
-                                            </button>
+                                        <div className="flex items-center gap-2 shrink-0">
+                                            <span className="text-xs font-medium text-slate-400 hidden sm:block">{job.is_active ? 'Active' : 'Hidden'}</span>
+                                            <Switch
+                                                checked={!!job.is_active}
+                                                onCheckedChange={() => handleToggleActive(job as IJob)}
+                                                aria-label={`Toggle active for ${job.job_title}`}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Description */}
+                                    <p className="text-sm text-slate-600 line-clamp-2 mt-3">{job.job_description}</p>
+
+                                    {/* Footer: stats + actions */}
+                                    <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap">
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                                                <Users className="w-3.5 h-3.5" /> {job.application_count || 0} applicant{job.application_count === 1 ? '' : 's'}
+                                            </span>
                                             {!!job.applicant_stats?.shortlisted && (
                                                 <Badge variant="warning" className="gap-1"><Star className="w-3 h-3" /> {job.applicant_stats.shortlisted} shortlisted</Badge>
                                             )}
@@ -374,34 +387,20 @@ const JobsModule = () => {
                                                 <Badge variant="success" className="gap-1"><CheckCircle2 className="w-3 h-3" /> {job.applicant_stats.hired} hired</Badge>
                                             )}
                                         </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 flex-wrap justify-end shrink-0">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setSelectedApplicantsJob(job as IJob)}
-                                        >
-                                            <Users className="w-4 h-4 mr-2" /> Applicants
-                                        </Button>
-                                        <Switch
-                                            checked={!!job.is_active}
-                                            onCheckedChange={() => handleToggleActive(job as IJob)}
-                                            aria-label={`Toggle active for ${job.job_title}`}
-                                        />
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleCopyFrontendUrl(job as IJob)}
-                                            aria-label={`Copy frontend URL for ${job.job_title}`}
-                                        >
-                                            <Copy className="w-4 h-4" />
-                                        </Button>
-                                        <Button variant="outline" size="sm" onClick={() => { setCurrentJob({ ...job, department: (job.department as Department)._id }); setIsEditing(true); }}>
-                                            <Edit2 className="w-4 h-4" />
-                                        </Button>
-                                        <Button variant="destructive" size="sm" onClick={() => setJobToDelete(job as IJob)}>
-                                            <Trash2 className="w-4 h-4" />
-                                        </Button>
+                                        <div className="flex items-center gap-2">
+                                            <Button variant="outline" size="sm" onClick={() => setSelectedApplicantsJob(job as IJob)}>
+                                                <Users className="w-4 h-4" /> Applicants
+                                            </Button>
+                                            <Button variant="outline" size="sm" onClick={() => handleCopyFrontendUrl(job as IJob)} aria-label={`Copy frontend URL for ${job.job_title}`}>
+                                                <Copy className="w-4 h-4" />
+                                            </Button>
+                                            <Button variant="outline" size="sm" onClick={() => { setCurrentJob({ ...job, department: (job.department as Department)._id }); setIsEditing(true); }} aria-label={`Edit ${job.job_title}`}>
+                                                <Edit2 className="w-4 h-4" />
+                                            </Button>
+                                            <Button variant="destructive" size="sm" onClick={() => setJobToDelete(job as IJob)} aria-label={`Delete ${job.job_title}`}>
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}

@@ -325,7 +325,9 @@ export const installMockApi = () => {
     if (data === undefined) {
       return Promise.reject({ response: { status: 404, data: { message: "Not mocked" }, ...base }, isAxiosError: true, config });
     }
-    await new Promise((r) => setTimeout(r, 200));
+    // Resolve on a microtask (no throttleable timer) so it never hangs in
+    // a backgrounded preview tab.
+    await Promise.resolve();
     return { data, status: 200, statusText: "OK", ...base } as AxiosResponse;
   };
   console.info("[mockApi] installed — serving sample admin data");
