@@ -10,7 +10,6 @@ import {
   Users,
   FileText,
   LogOut,
-  Shield,
   Briefcase,
   LayoutGrid,
   Settings,
@@ -21,6 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Logo } from './Logo';
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -52,14 +52,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const SidebarBody = (
     <div className="flex flex-col h-full bg-white border-r border-slate-200 w-64">
       {/* Brand */}
-      <div className="h-16 flex items-center gap-2.5 px-5 border-b border-slate-100 shrink-0">
-        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-          <Shield className="w-4.5 h-4.5 text-white" />
-        </div>
-        <div className="leading-tight">
-          <p className="font-bold text-slate-900 tracking-tight">Workervet</p>
-          <p className="text-[11px] text-slate-400 -mt-0.5">Admin</p>
-        </div>
+      <div className="h-16 flex items-center px-5 border-b border-slate-100 shrink-0">
+        <Logo markClass="w-7 h-7" textClass="text-base" sub="Admin" />
         <button
           onClick={() => setMobileOpen(false)}
           className="md:hidden ml-auto text-slate-400 hover:text-slate-700"
@@ -136,12 +130,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           <button onClick={() => setMobileOpen(true)} className="text-slate-500 hover:text-slate-900">
             <Menu className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Shield className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold tracking-tight text-slate-900">Workervet<span className="text-slate-400 font-normal"> Admin</span></span>
-          </div>
+          <Logo markClass="w-6 h-6" textClass="text-sm" />
           <button onClick={onLogout} className="text-slate-500 hover:text-slate-900">
             <LogOut className="w-5 h-5" />
           </button>
