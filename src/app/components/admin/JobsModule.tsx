@@ -345,7 +345,7 @@ const JobsModule = () => {
                     {
                         jobsLoading ? <JobCardSkeleton /> :
                             visibleJobs.map(job => (
-                                <div key={job._id} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex justify-between items-start group hover:border-blue-200 transition-all gap-4">
+                                <div key={job._id} className="bg-white p-6 rounded-lg border border-slate-200 shadow-sm flex flex-col lg:flex-row lg:justify-between lg:items-start group hover:border-blue-300 hover:shadow transition-all gap-4">
                                     <div>
                                         <div className="flex items-center gap-3 mb-1">
                                             <h3 className="font-bold text-lg text-slate-900">{job.job_title}</h3>

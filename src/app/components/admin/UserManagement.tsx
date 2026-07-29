@@ -77,12 +77,12 @@ const UserManagementModule: React.FC = () => {
   return (
     <div className="space-y-6">
       <SubTabs tab={tab} setTab={setTab} />
-      <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-slate-200 pb-6">
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-end gap-4 border-b border-slate-200 pb-6">
         <div>
            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Candidate Management</h2>
            <p className="text-slate-500 mt-1">Monitor candidate registrations, assessment history, and certifications.</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
            <div className="relative">
              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
              <Input 
